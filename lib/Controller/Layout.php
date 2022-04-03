@@ -201,6 +201,7 @@ class Layout extends Base
      */
     public function displayDesigner(Request $request, Response $response, $id)
     {
+        // echo "here"; 
         $layout = $this->layoutFactory->loadById($id);
         $sanitizedParams = $this->getSanitizer($request->getParams());
 
@@ -245,7 +246,6 @@ class Layout extends Base
                     return $module;
                 }, $moduleFactory->getAssignableModules())
         ];
-
         // Call the render the template
         $this->getState()->template = 'layout-designer-page';
         $this->getState()->setData($data);

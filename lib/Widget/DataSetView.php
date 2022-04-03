@@ -705,16 +705,23 @@ class DataSetView extends ModuleWidget
         // Create a data set object, to get the results.
         try {
             $dataSet = $this->dataSetFactory->getById($dataSetId);
+            $customHeading = (array)json_decode($this->getOption('customField'));
+
+            // echo "<pre>";
+            // var_dump($customHeading); 
+            // die;
 
             // Get an array representing the id->heading mappings
             $mappings = [];
             foreach ($columnIds as $dataSetColumnId) {
                 // Get the column definition this represents
                 $column = $dataSet->getColumn($dataSetColumnId);
+
                 /* @var DataSetColumn $column */
 
                 $mappings[] = [
                     'dataSetColumnId' => $dataSetColumnId,
+                    'customHeading' => is_null($customHeading[$column->heading])? $column->heading : $customHeading[$column->heading],
                     'heading' => $column->heading,
                     'dataTypeId' => $column->dataTypeId
                 ];
@@ -786,7 +793,7 @@ class DataSetView extends ModuleWidget
                         $table .= ' <tr class="HeaderRow">';
 
                         foreach ($mappings as $mapping) {
-                            $table .= '<th class="DataSetColumnHeaderCell">' . $mapping['heading'] . '</th>';
+                            $table .= '<th class="DataSetColumnHeaderCell">' . $mapping['customHeading'] . '</th>';
                         }
 
                         $table .= ' </tr>';
