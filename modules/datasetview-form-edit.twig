@@ -114,6 +114,17 @@
                         {% set helpText %}{% trans "Should the Table headings be shown?" %}{% endset %}
                         {{ forms.checkbox("showHeadings", title, module.getOption("showHeadings"), helpText) }}
                         
+                        <div id="customfield" class="row">
+                            <input type="text" name="customfield" value="" hidden>
+                            <div class="col-md-12 row">
+                                <label class="connectedlist col-sm-10 custom-field-label">Custom Field Talbe Name </label>
+                                <div class="connectedlist col-sm-2">
+{#                                     <input onclick="javascript:getNewRow()" class="custom-field-button" type="button" value="+"> #}
+<input class="custom-field-button add-btn" type="button" value="+">
+                                </div>
+                            </div>
+                        </div>
+
                         {% set title %}{% trans "Lower Row Limit" %}{% endset %}
                         {% set helpText %}{% trans "Please enter the Lower Row Limit for this DataSet (enter 0 for no limit)')" %}{% endset %}
                         {{ forms.number("lowerLimit", title, module.getOption("lowerLimit"), helpText) }}
@@ -267,6 +278,8 @@
                 </div>
 
                 <input type="hidden" name="step" value="2" />
+
+                {% include "datasetview-form-edit-javascript.twig"%}
             </form>
         </div>
     </div>

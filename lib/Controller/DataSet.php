@@ -236,6 +236,15 @@ class DataSet extends Base
                         );
                     }
 
+                     // Import DataSet
+                    if ($dataSet->isRemote !== 1) {
+                        $dataSet->buttons[] = array(
+                            'id' => 'dataset_button_importz_db',
+                            'class' => 'dataSetImportForm',
+                            'text' => __('Import Database')
+                        );
+                    }
+
                     // Copy
                     $dataSet->buttons[] = array(
                         'id' => 'dataset_button_copy',

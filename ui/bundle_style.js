@@ -66,3 +66,5 @@ require('leaflet/dist/leaflet.css');
 require('leaflet-draw/dist/leaflet.draw-src.css');
 require('leaflet-search/dist/leaflet-search.src.css');
 
+// custom css
+require('./src/style/custom.scss');

@@ -388,6 +388,8 @@ class DataSetView extends ModuleWidget
             }
 
             // Other properties
+
+            $this->setOption('customField', $sanitizedParams->getString('customfield'));
             $this->setOption('name', $sanitizedParams->getString('name'));
             $this->setUseDuration($sanitizedParams->getCheckbox('useDuration'));
             $this->setDuration($sanitizedParams->getInt('duration', ['default' => $this->getDuration()]));
