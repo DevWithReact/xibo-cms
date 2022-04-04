@@ -244,7 +244,7 @@ class DataSetView extends ModuleWidget
      *  @SWG\Parameter(
      *      name="updateInterval",
      *      in="formData",
-     *      description="Update interval in minutes",
+     *      description="Update interval in seconds",
      *      type="integer",
      *      required=false
      *   ),
@@ -392,7 +392,7 @@ class DataSetView extends ModuleWidget
             $this->setUseDuration($sanitizedParams->getCheckbox('useDuration'));
             $this->setDuration($sanitizedParams->getInt('duration', ['default' => $this->getDuration()]));
             $this->setOption('enableStat', $sanitizedParams->getString('enableStat'));
-            $this->setOption('updateInterval', $sanitizedParams->getInt('updateInterval', ['default' => 120]));
+            $this->setOption('updateInterval', $sanitizedParams->getInt('updateInterval', ['default' => 300]));//The unit of updateinterval is changed to sec from min. 
             $this->setOption('freshnessTimeout', $sanitizedParams->getInt('freshnessTimeout', ['default' => 0]));
             $this->setOption('rowsPerPage', $sanitizedParams->getInt('rowsPerPage'));
             $this->setOption('durationIsPerPage', $sanitizedParams->getCheckbox('durationIsPerPage'));
@@ -698,7 +698,7 @@ class DataSetView extends ModuleWidget
         $columnIds = explode(',', $columnIds);
 
         // Set an expiry time for the media
-        $expires = Carbon::now()->addSeconds($this->getOption('updateInterval', 3600) * 60)->format('U');
+        $expires = Carbon::now()->addSeconds($this->getOption('updateInterval', 300))->format('U');
 
         // Create a data set object, to get the results.
         try {
@@ -952,7 +952,7 @@ class DataSetView extends ModuleWidget
     /** @inheritdoc */
     public function getCacheDuration()
     {
-        return $this->getOption('updateInterval', 120) * 60;
+        return $this->getOption('updateInterval', 300);
     }
 
     /** @inheritdoc */

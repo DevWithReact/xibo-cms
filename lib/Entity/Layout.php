@@ -1715,7 +1715,7 @@ class Layout implements \JsonSerializable
                     // For the moment we will assume that all update intervals are the same as the cache duration
                     // remembering that the cache duration is in seconds and the updateInterval in minutes.
                     $optionsNode->appendChild(
-                        $document->createElement('updateInterval', $module->getCacheDuration() / 60)
+                        $document->createElement('updateInterval', $module->getCacheDuration())
                     );
                 }
 
