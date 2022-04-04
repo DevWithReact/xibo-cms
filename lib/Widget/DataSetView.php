@@ -388,6 +388,7 @@ class DataSetView extends ModuleWidget
             }
 
             // Other properties
+            $this->setOption('threshold', $sanitizedParams->getString('thresholdjson'));
             $this->setOption('name', $sanitizedParams->getString('name'));
             $this->setUseDuration($sanitizedParams->getCheckbox('useDuration'));
             $this->setDuration($sanitizedParams->getInt('duration', ['default' => $this->getDuration()]));
@@ -567,11 +568,55 @@ class DataSetView extends ModuleWidget
                 'noDataMessage' => $this->noDataMessageOrDefault('')['html']
             ])
             ->appendJavaScript('
+                function getKeyIndex(array, value){
+                    if(array.length == 0) {
+                        return -1; 
+                    } else if( array.length == 1) {
+                        return 1; 
+                    } else {
+                        for(let i = 0; i < array.length - 1; i++)
+                        {   
+                            if(value > array[i] && value <= array[i + 1]){
+                                return i + 1; 
+                            }
+                        }
+                    }
+                }
+                function setThresholdColor(){
+
+                    let initalThreshold ='.$this->getOption('threshold').';
+                    console.log(initalThreshold);
+                    let keyArray=[-Infinity];
+                    let isNumber = new RegExp(/^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$/);
+
+                    if (initalThreshold) {
+                        Object.keys(initalThreshold).forEach(function(key) {
+                            keyArray.push(Number(key)); 
+                        });
+                        keyArray.sort(function(a, b){
+                            return a-b;
+                        })
+
+                    } 
+
+                    $("table.DataSetTable td").each(function(){
+                        let cellValue = $(this).children().first().html();
+                        if(isNumber.test(cellValue)){
+                            console.log("it is number");
+                            let intervalIndex = getKeyIndex(keyArray, cellValue); 
+                            if (intervalIndex == -1)
+                                return;
+                            $(this).children().first().css("color", initalThreshold[keyArray[intervalIndex]]);
+                        }
+
+                    });
+                }
                 $(document).ready(function() {
+
                     $("body").xiboLayoutScaler(options); 
                     $("#DataSetTableContainer").find("img").xiboImageRender(options);
 
-                    var runOnVisible = function() { $("#DataSetTableContainer").dataSetRender(options);  };
+                    let runOnVisible = function() { $("#DataSetTableContainer").dataSetRender(options);  };
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
                     
                     // Do we have a freshnessTimeout?
@@ -584,6 +629,8 @@ class DataSetView extends ModuleWidget
                             }
                         }, 10000);
                     }
+                    setThresholdColor();
+
                 });
             ')
             ->appendJavaScript($this->parseLibraryReferences($this->isPreview(), $this->getRawNode('javaScript', '')))
@@ -703,6 +750,7 @@ class DataSetView extends ModuleWidget
         // Create a data set object, to get the results.
         try {
             $dataSet = $this->dataSetFactory->getById($dataSetId);
+            $thresholdArray = (array)json_decode($this->getOption('threshold'));
 
             // Get an array representing the id->heading mappings
             $mappings = [];
@@ -714,7 +762,8 @@ class DataSetView extends ModuleWidget
                 $mappings[] = [
                     'dataSetColumnId' => $dataSetColumnId,
                     'heading' => $column->heading,
-                    'dataTypeId' => $column->dataTypeId
+                    'dataTypeId' => $column->dataTypeId, 
+                    'threshold' => $thresholdArray
                 ];
             }
 
@@ -794,10 +843,10 @@ class DataSetView extends ModuleWidget
                     $table .= '<tbody>';
                 }
 
-                $table .= '<tr class="DataSetRow DataSetRow' . (($rowCount % 2) ? 'Odd' : 'Even') . '" id="row_' . $rowCount . '">';
+                $table .= '<tr class="DataSetRow DataSetRow' . (($rowCount % 2) ? 'Odd' : 'Even') .' id="row_' . $rowCount . '">';
 
                 // Output each cell for these results
-                $i = 0;
+                $i = 0; 
                 foreach ($mappings as $mapping) {
                     $i++;
 

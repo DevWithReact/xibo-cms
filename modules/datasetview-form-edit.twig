@@ -37,6 +37,7 @@
             <li class="nav-item"><a class="nav-link active" href="#general" role="tab" data-toggle="tab"><span>{% trans "General" %}</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#configurationTab" role="tab" data-toggle="tab"><span>{% trans "Configuration" %}</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#appearanceTab" role="tab" data-toggle="tab"><span>{% trans "Appearance" %}</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="#thresholdTab" role="tab" data-toggle="tab"><span>{% trans "Threshold" %}</span></a></li>             
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                     {% trans "Templates" %}<span class="caret"></span>
@@ -169,6 +170,21 @@
                         {{ forms.number("fontSize", title, module.getOption("fontSize"), helpText, "template-selector-control") }}
                     </div>
 
+                    <div class="tab-pane" id="thresholdTab">
+
+                        {% set message %}{% trans "Below you can set threshold value according with different color." %}{% endset %}
+                        {{ forms.message(message) }}
+
+                        <div class="row add-threshold">
+                            <input type='text' value='' name="thresholdjson" hidden>
+                            <input type="button" class="btn btn-info col-sm-4 btn-add-threshold" value="Add Threshold">
+                            <label class="col-sm-8">Press Add button to add threshold color for dataset view.</label>
+                        </div> 
+
+                        <div class="content-threshold"></div>
+                    </div>
+
+
                     <div class="tab-pane" id="noDataTemplateTab">
                         <div class="form-content-title row">
                             <h4 class="col-6 text-left">{% trans "No Data Template" %}</h4>
@@ -267,7 +283,10 @@
                 </div>
 
                 <input type="hidden" name="step" value="2" />
+
+                {% include "datasetview-threshold-javascript.twig" %}  
             </form>
         </div>
     </div>
+
 {% endblock %}
