@@ -25,49 +25,6 @@
 <script type="text/javascript">
     $(document).ready(function(){
 
-        function getKeyIndex(array, value){
-            if(array.length == 0) {
-                return; 
-            } else if( array.length == 1) {
-                return 0; 
-            } else{
-                for(let i = 0; i < array.length - 1; i++)
-                {   
-                    if(value > array[i] && value <= array[i + 1]){
-                        return i ; 
-                    }
-                }
-            }
-        }
-
-        function setThresholdColor(){
-
-            let initalThreshold ="{{ module.getOption('threshold')}}";
-            let keyArray=[-10000000];
-
-            if (initalThreshold != '') {
-
-                initalThreshold =JSON.parse($('<textarea />').html(initalThreshold).text());
-
-                Object.keys(initalThreshold).forEach(function(key) {
-                    keyArray.push(key); 
-                });   
-                keyArray.sort(function(a, b){
-                    return a-b;
-                })
-
-            } 
-
-            $("table td").each(function(){
-
-                let cellValue = $(this).children().first().html();
-                let intervalIndex = getKeyIndex(keyArray, cellValue); 
-                $(cellValue).css("color", initalThreshold[keyArray[intervalIndex]]);
-
-            });
-        }
-
-        
         loadInitThreshold(); 
 
         $('.btn-add-threshold').on('click', function(){
