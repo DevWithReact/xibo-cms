@@ -386,7 +386,7 @@
                     </select>
                 </div>
                  <div class="col-sm-6">
-                    <select class="form-control" {% if type == "dropdownmulti" %}multiple{% endif %} name="{{ name }}" id="{{ name }}" {{ callBack }}
+                    <select class="form-control" {% if type == "dropdownmulti" %}multiple{% endif %} name="{{ name }}_header" id="{{ name }}_header" {{ callBack }}
                         {% if dataAttributes|length > 0 %}
                             {% for attribute in dataAttributes %}
                                 {{ attribute.name }}="{{ attribute.value }}"

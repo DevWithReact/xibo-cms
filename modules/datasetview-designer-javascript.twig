@@ -93,6 +93,7 @@
 
         // Populate the font list with options
         var $fontFamily = $(dialog).find("#fontFamily");
+        var $fontFamily_Header = $(dialog).find("#fontFamily_header");
         $.ajax({
             method: "GET",
             url: $fontFamily.data('searchUrl'),
@@ -103,6 +104,12 @@
                             $fontFamily.append($('<option value="' + element.familyName + '" selected>' + element.displayName + '</option>'));
                         } else {
                             $fontFamily.append($('<option value="' + element.familyName + '">' + element.displayName + '</option>'));
+                        }
+
+                        if ($fontFamily_Header.data('value') === element.familyName) {
+                            $fontFamily_Header.append($('<option value="' + element.familyName + '" selected>' + element.displayName + '</option>'));
+                        } else {
+                            $fontFamily_Header.append($('<option value="' + element.familyName + '">' + element.displayName + '</option>'));
                         }
                     });
                 }
