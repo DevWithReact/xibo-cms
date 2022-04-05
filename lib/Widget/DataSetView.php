@@ -410,10 +410,14 @@ class DataSetView extends ModuleWidget
             $this->setRawNode('javaScript', $request->getParam('javaScript', ''));
 
             $this->setOption('backgroundColor', $sanitizedParams->getString('backgroundColor'));
+            $this->setOption('backgroundColorHeader', $sanitizedParams->getString('backgroundColor_header'));
             $this->setOption('borderColor', $sanitizedParams->getString('borderColor'));
             $this->setOption('fontColor', $sanitizedParams->getString('fontColor'));
+            $this->setOption('fontColorHeader', $sanitizedParams->getString('fontColor_header'));
             $this->setOption('fontFamily', $sanitizedParams->getString('fontFamily'));
+            $this->setOption('fontFamilyHeader', $sanitizedParams->getString('fontFamily_header'));
             $this->setOption('fontSize', $sanitizedParams->getInt('fontSize'));
+            $this->setOption('fontSizeHeader', $sanitizedParams->getInt('fontSize_header'));
 
             if ($this->getOption('overrideTemplate') == 1) {
                 $this->setRawNode('styleSheet', $request->getParam('styleSheet', null));
@@ -515,19 +519,31 @@ class DataSetView extends ModuleWidget
 
         // If we have some options then add them to the end of the style sheet
         if ($this->getOption('backgroundColor') != '' && $this->getOption('templateId') == 'empty') {
-            $styleSheet .= 'table.DataSetTable { background-color: ' . $this->getOption('backgroundColor') . '; }';
+            $styleSheet .= 'table.DataSetTable tbody { background-color: ' . $this->getOption('backgroundColor') . '; }';
+        }
+        if ($this->getOption('backgroundColorHeader') != '' && $this->getOption('templateId') == 'empty') {
+            $styleSheet .= 'table.DataSetTable thead { background-color: ' . $this->getOption('backgroundColorHeader') . '; }';
         }
         if ($this->getOption('borderColor') != '' && $this->getOption('templateId') == 'empty') {
             $styleSheet .= 'table.DataSetTable, table.DataSetTable tr, table.DataSetTable th, table.DataSetTable td { border: 1px solid ' . $this->getOption('borderColor') . '; }';
         }
         if ($this->getOption('fontColor') != '' && $this->getOption('templateId') == 'empty') {
-            $styleSheet .= 'table.DataSetTable { color: ' . $this->getOption('fontColor') . '; }';
+            $styleSheet .= 'table.DataSetTable tbody { color: ' . $this->getOption('fontColor') . '; }';
+        }
+        if ($this->getOption('fontColorHeader') != '' && $this->getOption('templateId') == 'empty') {
+            $styleSheet .= 'table.DataSetTable thead { color: ' . $this->getOption('fontColorHeader') . '; }';
         }
         if ($this->getOption('fontFamily') != '') {
-            $styleSheet .= 'table.DataSetTable { font-family: ' . $this->getOption('fontFamily') . '; }';
+            $styleSheet .= 'table.DataSetTable tbody { font-family: ' . $this->getOption('fontFamily') . '; }';
+        }
+        if ($this->getOption('fontFamilyHeader') != '') {
+            $styleSheet .= 'table.DataSetTable thead { font-family: ' . $this->getOption('fontFamilyHeader') . '; }';
         }
         if ($this->getOption('fontSize') != '') {
-            $styleSheet .= 'table.DataSetTable { font-size: ' . $this->getOption('fontSize') . 'px; }';
+            $styleSheet .= 'table.DataSetTable tbody { font-size: ' . $this->getOption('fontSize') . 'px; }';
+        }
+        if ($this->getOption('fontSizeHeader') != '') {
+            $styleSheet .= 'table.DataSetTable thead { font-size: ' . $this->getOption('fontSizeHeader') . 'px; }';
         }
 
         // Table display CSS fix

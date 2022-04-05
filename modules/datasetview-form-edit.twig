@@ -104,7 +104,7 @@
                                     <ul id="columnsIn" class="connectedSortable m-auto text-center">
                                         {% for column in module.dataSetColumnsSelected() %}
                                             <li id="{{ column.dataSetColumnId }}" class="li-sortable">{{ column.heading }}</li>
-                                        {% endfor %}
+                              PP          {% endfor %}
                                     </ul>
                                 </div>
                             </div>
@@ -137,15 +137,23 @@
                         {% set helpText %}{% trans "Tick if you would like to override the template." %}{% endset %}
                         {{ forms.checkbox("overrideTemplate", title, module.getOption("overrideTemplate", "0"), helpText) }}
 
+
                         {% set useTemplatesMessage %}
                            {% trans "With Override the Template selected enter your own text, html and css by using the Templates drop down menu in the tab header above." %}                     
                         {% endset %}
                         {{ forms.message(useTemplatesMessage, 'template-override-controls') }}
 
+
+                        <div class="row">
+                            <p class="text-info text-center col-sm-2">{% trans "" %}</p>
+                            <p class="text-info text-center col-sm-5">{% trans "Table Body" %}</p>
+                            <p class="text-info text-center col-sm-5">{% trans "Table Header" %}</p>
+                        </div>
+
                         <div class="template-selector-default">
                             {% set title %}{% trans "Background Colour" %}{% endset %}
                             {% set helpText %}{% trans "Use the colour picker to select the background colour" %}{% endset %}
-                            {{ forms.colorPicker("backgroundColor", title, module.getOption("backgroundColor"), helpText, "template-selector-control") }}
+                            {{ forms.colorPickerDouble("backgroundColor", title, module.getOption("backgroundColor"), module.getOption("backgroundColorHeader"), helpText, "template-selector-control") }}
 
                             {% set title %}{% trans "Border Colour" %}{% endset %}
                             {% set helpText %}{% trans "Use the colour picker to select the border colour" %}{% endset %}
@@ -153,7 +161,7 @@
 
                             {% set title %}{% trans "Font Colour" %}{% endset %}
                             {% set helpText %}{% trans "Use the colour picker to select the font colour" %}{% endset %}
-                            {{ forms.colorPicker("fontColor", title, module.getOption("fontColor"), helpText, "template-selector-control") }}
+                            {{ forms.colorPickerDouble("fontColor", title, module.getOption("fontColor"), module.getOption("fontColorHeader"), helpText, "template-selector-control") }}
                         </div>
 
                         {% set title %}{% trans "Font" %}{% endset %}
@@ -162,11 +170,16 @@
                             { name: "data-value", value: module.getOption("fontFamily") }
                         ] %}
                         {% set helpText %}{% trans "Select a custom font - leave empty to use the default font." %}{% endset %}
-                        {{ forms.dropdown("fontFamily", "single", title, "", [{id: "", value: ""}], "id", "value", helpText, "template-selector-control", "", "", "", attributes) }}
+                        {{ forms.dropdownDouble("fontFamily", "single", title, "", [{id: "", value: ""}], "id", "value", helpText, "template-selector-control", "", "", "", attributes) }}
 
                         {% set title %}{% trans "Font Size" %}{% endset %}
                         {% set helpText %}{% trans "Set the font size" %}{% endset %}
-                        {{ forms.number("fontSize", title, module.getOption("fontSize"), helpText, "template-selector-control") }}
+                        {{ forms.numberDouble("fontSize", title, module.getOption("fontSize"), "23", helpText, "template-selector-control") }}
+
+                        {% set message %}{% trans "Change Heading Font Size." %}{% endset %}
+                        {{ forms.message(message) }}
+
+
                     </div>
 
                     <div class="tab-pane" id="noDataTemplateTab">
