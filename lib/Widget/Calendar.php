@@ -555,6 +555,7 @@ class Calendar extends ModuleWidget
         $this->setOption('noEventTrigger', $sanitizedParams->getString('noEventTrigger'));
         $this->setOption('currentEventTrigger', $sanitizedParams->getString('currentEventTrigger'));
 
+        $this->setRawNode('javaScript', $request->getParam('javaScript', ''));
         $this->isValid();
         $this->saveWidget();
 
@@ -713,6 +714,7 @@ class Calendar extends ModuleWidget
                     }
                 });
             ')
+            ->appendJavaScript($this->parseLibraryReferences($this->isPreview(), $this->getRawNode('javaScript', '')))
             ->appendItems($items);
 
         // Append calendar structure
