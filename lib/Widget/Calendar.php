@@ -543,7 +543,7 @@ class Calendar extends ModuleWidget
         $this->setOption('multiDayEventTextColor', $sanitizedParams->getString('multiDayEventTextColor'));
         $this->setOption('aditionalEventsBgColor', $sanitizedParams->getString('aditionalEventsBgColor'));
         $this->setOption('aditionalEventsTextColor', $sanitizedParams->getString('aditionalEventsTextColor'));
-    
+
         $this->setOption('excludeAllDay', $sanitizedParams->getCheckbox('excludeAllDay'));
         $this->setOption('updateInterval', $sanitizedParams->getInt('updateInterval', ['default' => 120]));
 
@@ -679,10 +679,10 @@ class Calendar extends ModuleWidget
                         // Parse the item and add it to the array if it has not finished yet
                         var startDate = moment(element.startDate);
                         var endDate = moment(element.endDate);
-                        
+
                         // Check if there is an event ongoing
                         ongoingEvent = (startDate.isBefore(now) && endDate.isAfter(now));
-                        
+
                         if (endDate.isAfter(now)) {
                             if (moment(element.startDate).isBefore(now)) {
                                 element.currentEvent = true;
@@ -694,16 +694,16 @@ class Calendar extends ModuleWidget
                         // Return all elements
                         parsedItems.push(element);
                     });
-                
+
                     $("body").find("img").xiboImageRender(options);
                     $("body").xiboLayoutScaler(options);
-                    
+
                     var runOnVisible = function() { $("#content").xiboTextRender(options, parsedItems); };
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
 
                     // Run calendar render
                     $("body").xiboCalendarRender(options, parsedItems);
-                    
+
                     if(ongoingEvent && currentEventTrigger) {
                         // If there is an event now, send the Current Event trigger ( if exists )
                         xiboIC.trigger(currentEventTrigger);
@@ -772,7 +772,7 @@ class Calendar extends ModuleWidget
 
             // Add this to the cache.
             $cache->set($document);
-            $cache->expiresAfter($this->getOption('updateInterval', 360) * 60);
+            $cache->expiresAfter($this->getOption('updateInterval', 360));
 
             // Save
             $this->getPool()->saveDeferred($cache);
@@ -925,7 +925,7 @@ class Calendar extends ModuleWidget
     /** @inheritdoc */
     public function getCacheDuration()
     {
-        return $this->getOption('updateInterval', 120) * 60;
+        return $this->getOption('updateInterval', 120);
     }
 
     /** @inheritdoc */
