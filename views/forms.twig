@@ -337,7 +337,6 @@
                         {% else %}
                             {% set tempOptions = options %}
                         {% endif %}
-                        {{ tempOptions | json_encode(constant('JSON_PRETTY_PRINT')) }}
 
                         {% for option in tempOptions %}
 
@@ -385,7 +384,7 @@
 
                     </select>
                 </div>
-                 <div class="col-sm-6">
+                <div class="col-sm-6">
                     <select class="form-control" {% if type == "dropdownmulti" %}multiple{% endif %} name="{{ name }}_header" id="{{ name }}_header" {{ callBack }}
                         {% if dataAttributes|length > 0 %}
                             {% for attribute in dataAttributes %}

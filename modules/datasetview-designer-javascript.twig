@@ -100,13 +100,14 @@
             success: function(res) {
                 if (res.success) {
                     $.each(res.data, function(index, element) {
+
                         if ($fontFamily.data('value') === element.familyName) {
                             $fontFamily.append($('<option value="' + element.familyName + '" selected>' + element.displayName + '</option>'));
                         } else {
                             $fontFamily.append($('<option value="' + element.familyName + '">' + element.displayName + '</option>'));
                         }
 
-                        if ($fontFamily_Header.data('value') === element.familyName) {
+                        if ($fontFamily_Header.data('value-header') === element.familyName) {
                             $fontFamily_Header.append($('<option value="' + element.familyName + '" selected>' + element.displayName + '</option>'));
                         } else {
                             $fontFamily_Header.append($('<option value="' + element.familyName + '">' + element.displayName + '</option>'));
