@@ -33,6 +33,7 @@ use Stash\Invalidation;
 use Xibo\Helper\Translate;
 use Xibo\Support\Exception\ConfigurationException;
 use Xibo\Support\Exception\InvalidArgumentException;
+use Xibo\Helper\AttachmentUploadHandler;
 
 /**
  * Class Calendar
@@ -497,7 +498,13 @@ class Calendar extends ModuleWidget
         $this->setOption('name', $sanitizedParams->getString('name'));
         $this->setOption('eventLabelNow', $sanitizedParams->getString('eventLabelNow'));
         $this->setOption('calendarType', $sanitizedParams->getInt('calendarType', ['default' => 1]));
-
+        $this->setOption('useiCal', $sanitizedParams->getCheckbox('useiCal'));
+        if ($sanitizedParams->getCheckbox('useiCal') == 1) {
+            if ($sanitizedParams->getString('iCalData'))
+                $this->setOption('iCalData', $sanitizedParams->getString('iCalData'));
+        }
+        else
+            $this->setOption('iCalData', '');
         // Template/Configure options
         if ($this->getOption('calendarType') == 1) {
             // Schedule templates
@@ -586,7 +593,6 @@ class Calendar extends ModuleWidget
 
         // Get the feed URL contents from cache or source
         $items = $this->parseFeed($this->getFeed(), $calendarType);
-
         // Information from the Module
         $duration = $this->getCalculatedDurationForGetResource();
         $takeItemsFrom = $this->getOption('takeItemsFrom', 'start');
@@ -730,17 +736,20 @@ class Calendar extends ModuleWidget
     {
         // Create a key to use as a caching key for this item.
         // the rendered feed will be cached, so it is important the key covers all options.
+        $localData = $this->getOption('iCalData');
+        $libraryFolder = $this->getConfig()->getSetting('LIBRARY_LOCATION');
         $feedUrl = urldecode($this->getOption('uri'));
 
-        if (empty($feedUrl)) {
+        if (empty($localData) && empty($feedUrl)) {
             throw new ConfigurationException(__('Please provide a calendar feed URL'));
         }
 
+        $cacheKey = $feedUrl ? $feedUrl : $localData;
         /** @var \Stash\Item $cache */
-        $cache = $this->getPool()->getItem($this->makeCacheKey(md5($feedUrl)));
+        $cache = $this->getPool()->getItem($this->makeCacheKey(md5($cacheKey)));
         $cache->setInvalidationMethod(Invalidation::SLEEP, 5000, 15);
 
-        $this->getLog()->debug('Calendar ' . $feedUrl . '. Cache key: ' . $cache->getKey());
+        $this->getLog()->debug('Calendar ' . $cacheKey . '. Cache key: ' . $cache->getKey());
 
         // Get the document out of the cache
         $document = $cache->get();
@@ -754,13 +763,18 @@ class Calendar extends ModuleWidget
             $cache->lock(120);
 
             try {
-                // Create a Guzzle Client to get the Feed XML
-                $client = new Client();
-                $response = $client->get($feedUrl, $this->getConfig()->getGuzzleProxy([
-                    'timeout' => 20 // wait no more than 20 seconds: https://github.com/xibosignage/xibo/issues/1401
-                ]));
+                if (!empty($feedUrl)) {
+                    // Create a Guzzle Client to get the Feed XML
+                    $client = new Client();
+                    $response = $client->get($feedUrl, $this->getConfig()->getGuzzleProxy([
+                        'timeout' => 20 // wait no more than 20 seconds: https://github.com/xibosignage/xibo/issues/1401
+                    ]));
 
-                $document = $response->getBody()->getContents();
+                    $document = $response->getBody()->getContents();
+                } else {
+                    $fileName = $libraryFolder . 'temp/' . $localData;
+                    $document = file_get_contents($fileName);
+                }
 
             } catch (RequestException $requestException) {
                 // Log and return empty?
@@ -896,9 +910,8 @@ class Calendar extends ModuleWidget
         if ($this->getUseDuration() == 1 && $this->getDuration() == 0) {
             throw new InvalidArgumentException(__('Please enter a duration'), 'duration');
         }
-
         // Validate the URL
-        if (!v::url()->notEmpty()->validate(urldecode($this->getOption('uri')))) {
+        if (empty($this->getOption('iCalData')) && !v::url()->notEmpty()->validate(urldecode($this->getOption('uri')))) {
             throw new InvalidArgumentException(__('Please enter a feed URI containing the events you want to display'), 'uri');
         }
 
@@ -933,5 +946,44 @@ class Calendar extends ModuleWidget
     {
         // Make sure we lock for the entire iCal URI to prevent any clashes
         return md5(urldecode($this->getOption('uri')));
+    }
+
+    public function import(Request $request, Response $response, $id)
+    {
+        $this->getLog()->debug('Import Calendar');
+
+        $libraryFolder = $this->getConfig()->getSetting('LIBRARY_LOCATION');
+
+        // Make sure the library exists
+        MediaService::ensureLibraryExists($this->getConfig()->getSetting('LIBRARY_LOCATION'));
+
+        $sanitizer = $this->getSanitizer($request->getParams());
+
+
+        $options = array(
+            'userId' => $this->getUser()->userId,
+            'dataSetId' => $id,
+            'controller' => $this,
+            'upload_dir' => $libraryFolder . 'temp/',
+            'download_via_php' => true,
+            'script_url' => $this->urlFor($request,'calendar.import', ['id' => $id]),
+            'upload_url' => $this->urlFor($request,'calendar.import', ['id' => $id]),
+            'image_versions' => array(),
+            'accept_file_types' => '/\.cal/i',
+            'sanitizer' => $sanitizer
+        );
+
+        try {
+            // Hand off to the Upload Handler provided by jquery-file-upload
+            new AttachmentUploadHandler($options);
+
+        } catch (\Exception $e) {
+            // We must not issue an error, the file upload return should have the error object already
+            $this->getState()->setCommitState(false);
+        }
+
+        $this->setNoOutput(true);
+
+        return $this->render($request, $response);
     }
 }

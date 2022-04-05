@@ -74,13 +74,55 @@
 
         $(self).find('#overrideColorTemplate, #templateTheme, #calendarType').on('change', updateColors);
         updateColors();
+        registeriCalendarLoad();
     }
 
     // Runs before form submit
     function calendaradvanced_form_edit_submit() {
-
         // Update text callback fields
         formHelpers.updateCKEditor();
+    }
+
+    function registeriCalendarLoad() {
+        $(".loadiCal").on('click', function() {
+            openUploadForm({
+                url: "{{ url_for("calendar.import") }}",
+                title: "{% trans "Upload Version" %}",
+                videoImageCovers: false,
+                buttons: {
+                    main: {
+                        label: "{% trans "Done" %}",
+                        className: "btn-primary btn-bb-main",
+                        callback: function () {
+                        }
+                    }
+                },
+                templateOptions: {
+                    multi: false,
+                    trans: {
+                        addFiles: "{% trans "Add files" %}",
+                        startUpload: "{% trans "Start upload" %}",
+                        cancelUpload: "{% trans "Cancel upload" %}",
+                        processing: "{% trans "Processing..." %}"
+                    },
+                    upload: {
+                        maxSize: {{ libraryUpload.maxSize }},
+                        maxSizeMessage: "{{ libraryUpload.maxSizeMessage }}",
+                        validExt: "ics"
+                    },
+                    updateInAllChecked: false,
+                    deleteOldRevisionsChecked: false,
+                    folderSelector: false
+                },
+                uploadDoneEvent: function(d) {
+                    const result = d.result.files;
+                    if (result.length >= 1) {
+                        $("#iCalData").val(result[0].name);
+                        $("#fileIndicator").text(result[0].name);
+                    }
+                }
+            });
+        });
     }
 
 </script>

@@ -36,6 +36,7 @@ use Xibo\Support\Exception\AccessDeniedException;
 use Xibo\Support\Exception\GeneralException;
 use Xibo\Support\Exception\InvalidArgumentException;
 use Xibo\Support\Exception\NotFoundException;
+use Xibo\Helper\AttachmentUploadHandler;
 
 /**
  * Class DataSet
@@ -1509,5 +1510,45 @@ class DataSet extends Base
             $tempFileName,
             $dataSet->dataSet.'.csv'
         )->withHeader('Content-Type', 'text/csv;charset=utf-8'));
+    }
+
+
+
+    public function importCal(Request $request, Response $response)
+    {
+        $this->getLog()->debug('Import Calendar');
+
+        $libraryFolder = $this->getConfig()->getSetting('LIBRARY_LOCATION');
+
+        // Make sure the library exists
+        MediaService::ensureLibraryExists($this->getConfig()->getSetting('LIBRARY_LOCATION'));
+
+        $sanitizer = $this->getSanitizer($request->getParams());
+
+
+        $options = array(
+            'userId' => $this->getUser()->userId,
+            'controller' => $this,
+            'upload_dir' => $libraryFolder . 'temp/',
+            'download_via_php' => true,
+            'script_url' => $this->urlFor($request,'calendar.import'),
+            'upload_url' => $this->urlFor($request,'calendar.import'),
+            'image_versions' => array(),
+            'accept_file_types' => '/\.ics/i',
+            'sanitizer' => $sanitizer
+        );
+
+        try {
+            // Hand off to the Upload Handler provided by jquery-file-upload
+            new AttachmentUploadHandler($options);
+
+        } catch (\Exception $e) {
+            // We must not issue an error, the file upload return should have the error object already
+            $this->getState()->setCommitState(false);
+        }
+
+        $this->setNoOutput(true);
+
+        return $this->render($request, $response);
     }
 }
