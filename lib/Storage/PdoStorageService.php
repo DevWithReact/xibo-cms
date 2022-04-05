@@ -137,7 +137,6 @@ class PdoStorageService implements StorageServiceInterface
         if (!isset($this->conn['default'])) {
             $this->close('default');
         }
-
         $dsn = PdoStorageService::createDsn($host, $name);
 
         $opts = [];

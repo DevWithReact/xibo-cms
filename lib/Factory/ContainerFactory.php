@@ -113,11 +113,13 @@ class ContainerFactory
                     PROJECT_ROOT . '/reports',
                     PROJECT_ROOT . '/custom'
                 ], [
+                    'debug' => true,
                     'cache' => Environment::isDevMode() ? false : PROJECT_ROOT . '/cache'
                 ]);
                 $view->addExtension(new TransExtension());
                 $view->addExtension(new ByteFormatterTwigExtension());
                 $view->addExtension(new DateFormatTwigExtension());
+                $view->addExtension(new \Twig\Extension\DebugExtension());
 
                 return $view;
             },

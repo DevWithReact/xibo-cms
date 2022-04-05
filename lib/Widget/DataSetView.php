@@ -28,7 +28,8 @@ use Slim\Http\ServerRequest as Request;
 use Xibo\Entity\DataSetColumn;
 use Xibo\Support\Exception\InvalidArgumentException;
 use Xibo\Support\Exception\NotFoundException;
-
+use Xibo\Storage\PdoStorageService;
+use Xibo\Support\Exception\GeneralException;
 /**
  * Class DataSetView
  * @package Xibo\Widget
@@ -79,6 +80,57 @@ class DataSetView extends ModuleWidget
         return $this->dataSetColumnFactory->getByDataSetId($this->getOption('dataSetId'));
     }
 
+    public function isCustomQuery() {
+        $useQuery = $this->getOption('useQuery');
+        return $useQuery == '1';
+    }
+
+    public function getCustomData () {
+        $pdo = new PdoStorageService();
+        $customHost = $this->getOption('customHost');
+        $customDBUser = $this->getOption('customDBUser');
+        $customDBPassword = $this->getOption('customDBPassword');
+        $customDBName = $this->getOption('customDBName');
+        $customSql = $this->getOption('customSql');
+        $useQuery = $this->getOption('useQuery');
+        try {
+            $pdo->connect($customHost, $customDBUser, $customDBPassword, $customDBName);
+            $randomName = 'temp'.random_int(0, 10000);
+            $result = $pdo->select($customSql,[]);
+            return $result;
+        } catch (\PDOException $e) {
+            throw new GeneralException('Custom Database connection Faied. '.$e->getMessage());
+        }
+    }
+
+    public function getCustomQueryColumns() {
+        $pdo = new PdoStorageService();
+        $customHost = $this->getOption('customHost');
+        $customDBUser = $this->getOption('customDBUser');
+        $customDBPassword = $this->getOption('customDBPassword');
+        $customDBName = $this->getOption('customDBName');
+        $customSql = $this->getOption('customSql');
+        $useQuery = $this->getOption('useQuery');
+        try {
+            $pdo->connect($customHost, $customDBUser, $customDBPassword, $customDBName);
+            $randomName = 'temp'.random_int(0, 10000);
+            $pdo->select('create view '.$randomName.' as '.$customSql,[]);
+            $rows= $pdo->select('select COLUMN_NAME from information_schema.COLUMNS where TABLE_NAME=\''.$randomName.'\';',[]);
+            $pdo->select('drop view '.$randomName, []);
+            foreach($rows as $row) {
+                if ($row['COLUMN_NAME'] == 'id')
+                    continue;
+                $columns[] = (object)array(
+                    'dataSetColumnId'=> $row['COLUMN_NAME'],
+                    'heading'=> $row['COLUMN_NAME']
+                );;
+            }
+            return $columns;
+        } catch (\PDOException $e) {
+            throw new GeneralException('Custom Database connection Faied. '.$e->getMessage());
+        }
+        
+    }
     /**
      * Get Data Set Columns
      * @return array[DataSetColumn]
@@ -86,11 +138,16 @@ class DataSetView extends ModuleWidget
      */
     public function dataSetColumnsSelected()
     {
-        if ($this->getOption('dataSetId') == 0) {
+        if ($this->getOption('dataSetId') == 0 && $this->getOption('useQuery') != '1') {
             throw new InvalidArgumentException(__('DataSet not selected'));
         }
 
-        $columns = $this->dataSetColumnFactory->getByDataSetId($this->getOption('dataSetId'));
+        if ($this->getOption('useQuery') == '1') {
+            $columns = $this->getCustomQueryColumns();
+        } else {
+            $columns = $this->dataSetColumnFactory->getByDataSetId($this->getOption('dataSetId'));
+        }
+
         $columnsSelected = [];
         $colIds = explode(',', $this->getOption('columns'));
         
@@ -100,7 +157,7 @@ class DataSetView extends ModuleWidget
             foreach ($columns as $column) {
                 // See if the element on the odered list is the column
                 if ($column->dataSetColumnId == $colId) {
-                    $columnsSelected[] = $column;    
+                    $columnsSelected[] = $column; 
                 }
             }
         }
@@ -115,12 +172,15 @@ class DataSetView extends ModuleWidget
      */
     public function dataSetColumnsNotSelected()
     {
-        if ($this->getOption('dataSetId') == 0) {
+        if ($this->getOption('dataSetId') == 0 && $this->getOption('useQuery') != '1') {
             throw new InvalidArgumentException(__('DataSet not selected'));
         }
 
-        $columns = $this->dataSetColumnFactory->getByDataSetId($this->getOption('dataSetId'));
-
+        if ($this->getOption('useQuery') == '1') {
+            $columns = $this->getCustomQueryColumns();
+        } else {
+            $columns = $this->dataSetColumnFactory->getByDataSetId($this->getOption('dataSetId'));
+        }
         $columnsNotSelected = [];
         $colIds = explode(',', $this->getOption('columns'));
 
@@ -129,7 +189,6 @@ class DataSetView extends ModuleWidget
             if (!in_array($column->dataSetColumnId, $colIds))
                 $columnsNotSelected[] = $column;
         }
-
         return $columnsNotSelected;
     }
 
@@ -169,8 +228,7 @@ class DataSetView extends ModuleWidget
         $sanitizedParams = $this->getSanitizer($request->getParams());
         // Do we have a step provided?
         $step = $sanitizedParams->getInt('step', ['default' => 2]);
-
-        if ($step == 1 || !$this->hasDataSet()) {
+        if ($step == 1 || !$this->hasDataSet() && $this->getOption('useQuery') != '1') {
             return 'datasetview-form-edit-step1';
         } else {
             return 'datasetview-form-edit';
@@ -357,29 +415,62 @@ class DataSetView extends ModuleWidget
 
             // Read in the dataSetId, validate and store it
             $dataSetId = $sanitizedParams->getInt('dataSetId');
+            $customHost = $sanitizedParams->getString('customHost');
+            $customDBName = $sanitizedParams->getString('customDBName');
+            $customDBUser = $sanitizedParams->getString('customDBUser');
+            $customDBPassword = $sanitizedParams->getString('customDBPassword');
+            $customSql = $sanitizedParams->getString('customSql');
+            $useQuery = $sanitizedParams->getCheckBox('useQuery');
 
-            // Do we already have a DataSet?
-            if ($this->hasDataSet() && $dataSetId != $this->getOption('dataSetId')) {
-                // Reset the fields that are dependent on the dataSetId
-                $this->setOption('columns', '');
-            }
+            if ($useQuery) {
+                $pdo = new PdoStorageService();
+                try {
+                    $pdo->connect($customHost, $customDBUser, $customDBPassword, $customDBName);
+                    if ($pdo->exists($customSql, []) == true) {
+                        $this->setOption('customHost', $customHost);
+                        $this->setOption('customDBUser', $customDBUser);
+                        $this->setOption('customDBPassword', $customDBPassword);
+                        $this->setOption('customDBName', $customDBName);
+                        $this->setOption('customSql', $customSql);
+                        $this->setOption('useQuery', $useQuery);
+                        $this->setOption('dataSetId', 0);
+                    }
+                } catch (\PDOException $e) {
+                    throw new GeneralException('Custom Database connection Faied. '.$e->getMessage());
+                }
+            } else {
+                // Do we already have a DataSet?
+                if ($this->hasDataSet() && $dataSetId != $this->getOption('dataSetId')) {
+                    // Reset the fields that are dependent on the dataSetId
+                    $this->setOption('columns', '');
+                }
 
-            $this->setOption('dataSetId', $dataSetId);
+                $this->setOption('dataSetId', $dataSetId);
 
-            // Validate Data Set Selected
-            if ($dataSetId == 0) {
-                throw new InvalidArgumentException(__('Please select a DataSet'), 'dataSetId');
-            }
+                // Validate Data Set Selected
+                if ($dataSetId == 0) {
+                    throw new InvalidArgumentException(__('Please select a DataSet'), 'dataSetId');
+                }
+                //$this->setOption('customHost', '');
+                //$this->setOption('customDBUser', '');
+                //$this->setOption('customDBPassword', '');
+                //$this->setOption('customDBName', '');
+                //$this->setOption('customSql', '');
+                $this->setOption('useQuery', '0');
 
-            // Check we have permission to use this DataSetId
-            if (!$this->getUser()->checkViewable($this->dataSetFactory->getById($this->getOption('dataSetId')))) {
-                throw new InvalidArgumentException(__('You do not have permission to use that dataset'), 'dataSetId');
+                // Check we have permission to use this DataSetId
+                if (!$this->getUser()->checkViewable($this->dataSetFactory->getById($this->getOption('dataSetId')))) {
+                    throw new InvalidArgumentException(__('You do not have permission to use that dataset'), 'dataSetId');
+                }
             }
 
         } else {
 
             // Columns
-            $columns = $sanitizedParams->getIntArray('dataSetColumnId', ['default' => []]);
+            if ($this->getOption('useQuery') == '1')
+                $columns = $sanitizedParams->getArray('dataSetColumnId', ['default' => []]);
+            else
+                $columns = $sanitizedParams->getIntArray('dataSetColumnId', ['default' => []]);
 
             if (count($columns) == 0) {
                 $this->setOption('columns', '');
@@ -545,7 +636,6 @@ class DataSetView extends ModuleWidget
 
         // Generate the table
         $table = $this->dataSetTableHtml($displayId);
-
         // Work out how many pages we will be showing.
         $pages = ceil($table['countPages']);
         $totalDuration = ($durationIsPerItem == 0) ? $duration : ($duration * $pages);
@@ -699,23 +789,37 @@ class DataSetView extends ModuleWidget
 
         // Set an expiry time for the media
         $expires = Carbon::now()->addSeconds($this->getOption('updateInterval', 3600) * 60)->format('U');
-
+        
         // Create a data set object, to get the results.
         try {
-            $dataSet = $this->dataSetFactory->getById($dataSetId);
+            if ($this->getOption('useQuery') == '1') {
+                $columns = $this->getCustomQueryColumns();
+                $mappings = [];
+                foreach ($columns as $c) {
+                    if (in_array($c->dataSetColumnId, $columnIds)) {
+                        $mappings[] = [
+                            'dataSetColumnId' => $c->dataSetColumnId,
+                            'heading' => $c->dataSetColumnId,
+                            'dataTypeId' => 1
+                        ];
+                    }
+                }
+            } else {
+                $dataSet = $this->dataSetFactory->getById($dataSetId);
 
-            // Get an array representing the id->heading mappings
-            $mappings = [];
-            foreach ($columnIds as $dataSetColumnId) {
-                // Get the column definition this represents
-                $column = $dataSet->getColumn($dataSetColumnId);
-                /* @var DataSetColumn $column */
+                // Get an array representing the id->heading mappings
+                $mappings = [];
+                foreach ($columnIds as $dataSetColumnId) {
+                    // Get the column definition this represents
+                    $column = $dataSet->getColumn($dataSetColumnId);
+                    /* @var DataSetColumn $column */
 
-                $mappings[] = [
-                    'dataSetColumnId' => $dataSetColumnId,
-                    'heading' => $column->heading,
-                    'dataTypeId' => $column->dataTypeId
-                ];
+                    $mappings[] = [
+                        'dataSetColumnId' => $dataSetColumnId,
+                        'heading' => $column->heading,
+                        'dataTypeId' => $column->dataTypeId
+                    ];
+                }
             }
 
             $this->getLog()->debug(sprintf('Resolved column mappings: %s', json_encode($columnIds)));
@@ -747,7 +851,11 @@ class DataSetView extends ModuleWidget
             $this->getStore()->setTimeZone($dateNow->format('P'));
 
             // Get the data (complete table, filtered)
-            $dataSetResults = $dataSet->getData($filter);
+            if ($this->getOption('useQuery') == '1') {
+                $dataSetResults = $this->getCustomData();
+            } else {
+                $dataSetResults = $dataSet->getData($filter);
+            }
 
             if (count($dataSetResults) <= 0) {
                 return $this->noDataMessageOrDefault();
@@ -903,7 +1011,7 @@ class DataSetView extends ModuleWidget
      */
     private function hasDataSet()
     {
-        return (v::notEmpty()->validate($this->getOption('dataSetId')));
+        return $this->getOption('useQuery') == '1' || (v::notEmpty()->validate($this->getOption('dataSetId')));
     }
 
     /** @inheritdoc */
@@ -937,14 +1045,16 @@ class DataSetView extends ModuleWidget
     {
         $widgetModifiedDt = $this->widget->modifiedDt;
 
-        $dataSetId = $this->getOption('dataSetId');
-        $dataSet = $this->dataSetFactory->getById($dataSetId);
+        if ($this->getOption('useQuery') != '1') {
+            $dataSetId = $this->getOption('dataSetId');
+            $dataSet = $this->dataSetFactory->getById($dataSetId);
 
-        // Set the timestamp
-        $widgetModifiedDt = ($dataSet->lastDataEdit > $widgetModifiedDt) ? $dataSet->lastDataEdit : $widgetModifiedDt;
+            // Set the timestamp
+            $widgetModifiedDt = ($dataSet->lastDataEdit > $widgetModifiedDt) ? $dataSet->lastDataEdit : $widgetModifiedDt;
 
-        // Remote dataSets are kept "active" by required files
-        $dataSet->setActive();
+            // Remote dataSets are kept "active" by required files
+            $dataSet->setActive();
+        }
 
         return Carbon::createFromTimestamp($widgetModifiedDt);
     }
