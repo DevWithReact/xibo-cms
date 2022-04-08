@@ -45,6 +45,7 @@
                     <a class="template-override-controls dropdown-item" href="#optionalStylesheetTab" role="tab" data-toggle="tab"><span>{% trans "Optional Stylesheet" %}</span></a>
                     <a class="dropdown-item" href="#noDataTemplateTab" role="tab" data-toggle="tab"><span>{% trans "No Data" %}</span></a>
                     <a class="dropdown-item" href="#optionalJavascriptTab" role="tab" data-toggle="tab"><span>{% trans "Optional JavaScript" %}</span></a>
+                    <a class="template-optionalhtml-controls dropdown-item" href="#optionalHtmlTab" role="tab" data-toggle="tab"><span>{% trans "Optional HTML" %}</span></a>
                 </div>
             </li>
             <li class="nav-item"><a class="nav-link" href="#orderCriteria" role="tab" data-toggle="tab"><span>{% trans "Order" %}</span></a></li>
@@ -142,6 +143,10 @@
                         {% endset %}
                         {{ forms.message(useTemplatesMessage, 'template-override-controls') }}
 
+                        {% set title %}{% trans "Optional Html template?" %}{% endset %}
+                        {% set helpText %}{% trans "Tick if you would like to override optional HTML." %}{% endset %}
+                        {{ forms.checkbox("optionalHtml", title, module.getOption("optionalHtml", "0"), helpText) }}
+
                         <div class="template-selector-default">
                             {% set title %}{% trans "Background Colour" %}{% endset %}
                             {% set helpText %}{% trans "Use the colour picker to select the background colour" %}{% endset %}
@@ -196,6 +201,35 @@
 
                         {% set helpText %}{% trans "A message to display when no data is returned from the source" %}{% endset %}
                         {{ forms.textarea("noDataMessage", "", module.getRawNode("noDataMessage"), helpText, "", "", 5) }}
+                    </div>
+
+                    <div class="tab-pane" id="optionalHtmlTab">
+                        <div class="form-content-title row">
+                            <h4 class="col-6 text-left">{% trans "Optional HTML" %}</h4>
+                            <div class="col-6 text-right">
+                                <input type="checkbox" class="bootstrap-switch-target" id="optionalHtmlMessage_advanced" name="optionalHtmlMessage_advanced" {% if module.getOption("optionalHtmlMessage_advanced", 0) == 1 %}checked{% endif %}
+                                    data-size="small"
+                                    data-label-text="{% trans "Visual editor" %}"
+                                    data-label-width="80px"
+                                    data-on-text="{% trans "On" %}"
+                                    data-off-text="{% trans "Off" %}">
+                            </div>
+                        </div>
+
+                        {% set optionalHtmlMessage1 %}
+                            {% trans "Enter text or HTML in the box below." %}<br>
+                        {% endset %}
+                        {{ forms.message(optionalHtmlMessage1, 'optionalHtmlMessage-advanced-editor-hide') }}
+
+                        {% set optionalHtmlMessage2 %}
+                            {% trans "Enter the text to display." %}
+                            {% trans "The red rectangle reflects the size of the region you are editing." %}
+                            {% trans "Shift+Enter will drop a single line. Enter alone starts a new paragraph." %}
+                        {% endset %}
+                        {{ forms.message(optionalHtmlMessage2, 'optionalHtmlMessage-advanced-editor-show') }}
+
+                        {% set helpText %}{% trans "A message to display on screen with opiotnal HTML" %}{% endset %}
+                        {{ forms.textarea("optionalHtmlMessage", "", module.getRawNode("optionalHtmlMessage"), helpText, "", "", 5) }}
                     </div>
 
                     <div class="tab-pane" id="optionalStylesheetTab">
