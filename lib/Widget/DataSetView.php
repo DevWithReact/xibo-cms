@@ -707,21 +707,16 @@ class DataSetView extends ModuleWidget
             $dataSet = $this->dataSetFactory->getById($dataSetId);
             $customHeading = (array)json_decode($this->getOption('customField'));
 
-            // echo "<pre>";
-            // var_dump($customHeading);
-            // die;
-
             // Get an array representing the id->heading mappings
             $mappings = [];
             foreach ($columnIds as $dataSetColumnId) {
                 // Get the column definition this represents
                 $column = $dataSet->getColumn($dataSetColumnId);
-
                 /* @var DataSetColumn $column */
                 $customHeading[$column->heading] = isset($customHeading[$column->heading])
                                                         ?$customHeading[$column->heading]
                                                         :null;
-                                                        
+
                 $mappings[] = [
                     'dataSetColumnId' => $dataSetColumnId,
                     'customHeading' => is_null($customHeading[$column->heading])? $column->heading : $customHeading[$column->heading],
