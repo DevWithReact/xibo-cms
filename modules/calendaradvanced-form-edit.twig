@@ -77,6 +77,16 @@
                         {% set helpText %}{% trans "The Link for the iCal Feed" %}{% endset %}
                         {{ forms.input("uri", title, module.getOption("uri")|url_decode, helpText)}}
 
+                        <input type="hidden" name="iCalData" id="iCalData" />
+                        <div class="form-group row interval">
+                            <label class="col-sm-2 control-label" for="customInterval" accesskey=""></label>
+                            <div class="col-sm-10">
+                                <button type="button" class="btn btn-info loadiCal">Load iCal File</button>
+                                <label id="fileIndicator">{{ module.getOption("iCalData") ?? "File not loaded" }} </label>
+                            </div>
+                        </div>
+                        {% set title %}{% trans "Use local calendar file" %}{% endset %}
+                        {{ forms.checkbox("useiCal", title, module.getOption("useiCal")) }}
                         <section class="schedule-control-group">
                             {% set title %}{% trans "No events message" %}{% endset %}
                             {% set defaultMessage %}{% trans "No upcoming events" %}{% endset %}

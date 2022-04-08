@@ -458,6 +458,9 @@ $app->group('', function (RouteCollectorProxy $group) {
     $group->delete('/dataset/{id}/rss/{rssId}', ['\Xibo\Controller\DataSetRss','delete'])->setName('dataSet.rss.delete');
     $group->get('/rss/{psk}', ['\Xibo\Controller\DataSetRss','feed'])->setName('dataSet.rss.feed');
 
+    //Calendar iCal
+    $group->post('/calendar/import', ['\Xibo\Controller\DataSet','importCal'])->setName('calendar.import');
+
 })->addMiddleware(new \Xibo\Middleware\FeatureAuth($app->getContainer(), ['dataset.modify']));
 
 // Data

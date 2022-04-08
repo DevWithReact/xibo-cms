@@ -33,6 +33,7 @@ use Stash\Invalidation;
 use Xibo\Helper\Translate;
 use Xibo\Support\Exception\ConfigurationException;
 use Xibo\Support\Exception\InvalidArgumentException;
+use Xibo\Helper\AttachmentUploadHandler;
 
 /**
  * Class Calendar
@@ -498,6 +499,13 @@ class Calendar extends ModuleWidget
         $this->setOption('eventLabelNow', $sanitizedParams->getString('eventLabelNow'));
         $this->setOption('calendarType', $sanitizedParams->getInt('calendarType', ['default' => 1]));
 
+        $this->setOption('useiCal', $sanitizedParams->getCheckbox('useiCal'));
+        if ($sanitizedParams->getCheckbox('useiCal') == 1) {
+            if ($sanitizedParams->getString('iCalData'))
+                $this->setOption('iCalData', $sanitizedParams->getString('iCalData'));
+        }
+        else
+            $this->setOption('iCalData', '');
         // Template/Configure options
         if ($this->getOption('calendarType') == 1) {
             // Schedule templates
@@ -586,7 +594,6 @@ class Calendar extends ModuleWidget
 
         // Get the feed URL contents from cache or source
         $items = $this->parseFeed($this->getFeed(), $calendarType);
-
         // Information from the Module
         $duration = $this->getCalculatedDurationForGetResource();
         $takeItemsFrom = $this->getOption('takeItemsFrom', 'start');
@@ -730,17 +737,20 @@ class Calendar extends ModuleWidget
     {
         // Create a key to use as a caching key for this item.
         // the rendered feed will be cached, so it is important the key covers all options.
+        $localData = $this->getOption('iCalData');
+        $libraryFolder = $this->getConfig()->getSetting('LIBRARY_LOCATION');
         $feedUrl = urldecode($this->getOption('uri'));
 
-        if (empty($feedUrl)) {
+        if (empty($localData) && empty($feedUrl)) {
             throw new ConfigurationException(__('Please provide a calendar feed URL'));
         }
 
+        $cacheKey = $feedUrl ? $feedUrl : $localData;
         /** @var \Stash\Item $cache */
-        $cache = $this->getPool()->getItem($this->makeCacheKey(md5($feedUrl)));
+        $cache = $this->getPool()->getItem($this->makeCacheKey(md5($cacheKey)));
         $cache->setInvalidationMethod(Invalidation::SLEEP, 5000, 15);
 
-        $this->getLog()->debug('Calendar ' . $feedUrl . '. Cache key: ' . $cache->getKey());
+        $this->getLog()->debug('Calendar ' . $cacheKey . '. Cache key: ' . $cache->getKey());
 
         // Get the document out of the cache
         $document = $cache->get();
@@ -754,13 +764,18 @@ class Calendar extends ModuleWidget
             $cache->lock(120);
 
             try {
-                // Create a Guzzle Client to get the Feed XML
-                $client = new Client();
-                $response = $client->get($feedUrl, $this->getConfig()->getGuzzleProxy([
-                    'timeout' => 20 // wait no more than 20 seconds: https://github.com/xibosignage/xibo/issues/1401
-                ]));
+                if (!empty($feedUrl)) {
+                    // Create a Guzzle Client to get the Feed XML
+                    $client = new Client();
+                    $response = $client->get($feedUrl, $this->getConfig()->getGuzzleProxy([
+                        'timeout' => 20 // wait no more than 20 seconds: https://github.com/xibosignage/xibo/issues/1401
+                    ]));
 
-                $document = $response->getBody()->getContents();
+                    $document = $response->getBody()->getContents();
+                } else {
+                    $fileName = $libraryFolder . 'temp/' . $localData;
+                    $document = file_get_contents($fileName);
+                }
 
             } catch (RequestException $requestException) {
                 // Log and return empty?
@@ -896,9 +911,8 @@ class Calendar extends ModuleWidget
         if ($this->getUseDuration() == 1 && $this->getDuration() == 0) {
             throw new InvalidArgumentException(__('Please enter a duration'), 'duration');
         }
-
         // Validate the URL
-        if (!v::url()->notEmpty()->validate(urldecode($this->getOption('uri')))) {
+        if (empty($this->getOption('iCalData')) && !v::url()->notEmpty()->validate(urldecode($this->getOption('uri')))) {
             throw new InvalidArgumentException(__('Please enter a feed URI containing the events you want to display'), 'uri');
         }
 
