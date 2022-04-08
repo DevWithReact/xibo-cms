@@ -481,6 +481,7 @@ class DataSetView extends ModuleWidget
             // Other properties
             $this->setOption('customField', $sanitizedParams->getString('customfield'));
             $this->setOption('threshold', $sanitizedParams->getString('thresholdjson'));
+            $this->setOption('dateTimeFormat', $sanitizedParams->getString('DateTimeFormat'));
             $this->setOption('name', $sanitizedParams->getString('name'));
             $this->setUseDuration($sanitizedParams->getCheckbox('useDuration'));
             $this->setDuration($sanitizedParams->getInt('duration', ['default' => $this->getDuration()]));
@@ -752,6 +753,7 @@ class DataSetView extends ModuleWidget
         $columnIds = $this->getOption('columns');
         $showHeadings = $this->getOption('showHeadings');
         $rowsPerPage = $this->getOption('rowsPerPage');
+        $dataTimeFormatPattern = $this->getOption('dateTimeFormat');
 
         if ($columnIds == '') {
             return $this->noDataMessageOrDefault(__('No columns'));
@@ -1006,6 +1008,11 @@ class DataSetView extends ModuleWidget
                         $replace = ($this->isPreview())
                             ? '<img src="' . $this->urlFor('library.download', ['id' => $file->mediaId, 'type' => 'image']) . '?preview=1" />'
                             : '<img src="' . $file->storedAs . '" />';
+                    }
+
+                    if(preg_match("/^[0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/", $replace)){
+                        $replace = date_create($replace); 
+                        $replace =date_format($replace, $dataTimeFormatPattern); 
                     }
 
                     $table .= '<td class="DataSetColumn DataSetColumn_' . $i . '" id="column_' . ($i + 1) . '"><span class="DataSetCellSpan DataSetCellSpan_' . $rowCount . '_' . $i .'" id="span_' . $rowCount . '_' . ($i + 1) . '">' . $replace . '</span></td>';

@@ -128,6 +128,10 @@
 
                             </div>
                         </div>
+                        
+                        {% set title %}{% trans "DateTime Formatting" %}{% endset %}
+                        {% set helpText %}{% trans "Please enter the formatting pattern for this DataSet (enter y-m-d h:m:s for 2022-4-5 13:23:21)')" %}{% endset %}
+                        {{ forms.input("DateTimeFormat", title, module.getOption("dateTimeFormat"), helpText) }}
 
                         {% set title %}{% trans "Lower Row Limit" %}{% endset %}
                         {% set helpText %}{% trans "Please enter the Lower Row Limit for this DataSet (enter 0 for no limit)')" %}{% endset %}
