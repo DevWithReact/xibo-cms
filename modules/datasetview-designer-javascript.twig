@@ -39,6 +39,7 @@
             // Set override template field, using the helper ()
             formHelpers.setupCheckboxInputFields($(this), '#overrideTemplate', '.template-override-controls', '.template-selector-control');
 
+            formHelpers.setupCheckboxInputFields($(this), '#optionalHtml', '.template-optionalhtml-controls')
             // Set clock type input field, using the helper ()
             formHelpers.setupObjectValueInputFields($(this), '#templateId', ['.template-selector-default'], ['empty']);
 
@@ -48,6 +49,7 @@
 
             // Initialise CKEditor for the noDataMessage
             formHelpers.setupDualTypeTextArea(this, 'noDataMessage');
+            formHelpers.setupDualTypeTextArea(this, 'optionalHtmlMessage', false, '');
 
             // Setup template override
             formHelpers.setupTemplateOverriding(this, '#overrideTemplate', '#templateId',

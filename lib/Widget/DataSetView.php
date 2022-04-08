@@ -495,10 +495,13 @@ class DataSetView extends ModuleWidget
             $this->setOption('ordering', $sanitizedParams->getString('ordering'));
             $this->setOption('templateId', $sanitizedParams->getString('templateId'));
             $this->setOption('overrideTemplate', $sanitizedParams->getCheckbox('overrideTemplate'));
+            $this->setOption('optionalHtml', $sanitizedParams->getCheckbox('optionalHtml'));
             $this->setOption('useOrderingClause', $sanitizedParams->getCheckbox('useOrderingClause'));
             $this->setOption('useFilteringClause', $sanitizedParams->getCheckbox('useFilteringClause'));
             $this->setRawNode('noDataMessage', $request->getParam('noDataMessage', ''));
             $this->setOption('noDataMessage_advanced', $sanitizedParams->getCheckbox('noDataMessage_advanced'));
+            $this->setRawNode('optionalHtmlMessage', $request->getParam('optionalHtmlMessage', ''));
+            $this->setOption('optionalHtmlMessage_advanced', $sanitizedParams->getCheckbox('optionalHtmlMessage_advanced'));
             $this->setRawNode('javaScript', $request->getParam('javaScript', ''));
 
             $this->setOption('backgroundColor', $sanitizedParams->getString('backgroundColor'));
@@ -511,6 +514,9 @@ class DataSetView extends ModuleWidget
                 $this->setRawNode('styleSheet', $request->getParam('styleSheet', null));
             }
 
+            if($this->getOption('optionalHtml') == 1) {
+                $this->setRawNode('optionalHtmlMessage', $request->getParam('optionalHtmlMessage', null));
+            }
             // Order and Filter criteria
             $orderClauses = $sanitizedParams->getArray('orderClause', ['default' => []]);
             $orderClauseDirections = $sanitizedParams->getArray('orderClauseDirection', ['default' => []]);
@@ -706,6 +712,10 @@ class DataSetView extends ModuleWidget
             return $this->noDataMessageOrDefault(__('No columns'));
         }
 
+        //optionalHtmlMessage
+        if($this->getOption('optionalHtml') == 1) {
+            return $this->optionalHtmlMessageOrDefault();
+        }
         // Ordering
         $ordering = '';
 
@@ -1009,6 +1019,49 @@ class DataSetView extends ModuleWidget
                 'countRows' => 1
             ];
         }
+    }
+
+    /**
+     * @param string|null $default
+     * @return array
+     * @throws \Xibo\Support\Exception\NotFoundException
+     */
+    private function optionalHtmlMessageOrDefault($default = null)
+    {
+        $dataSetId = $this->getOption('dataSetId');
+        $columnIds = $this->getOption('columns');
+        $optionalHtmlMessage = $this->getOption('optionalHtmlMessage');
+
+        $columnIds = explode(',', $columnIds);
+
+        if ($default === null) {
+            $default = __('Empty Result Set with filter criteria.');
+        }
+
+        if ($this->getRawNode('optionalHtmlMessage') == '') {
+            throw new NotFoundException($default);
+        } else{
+                try {
+                    $dataSet = $this->dataSetFactory->getById($dataSetId);
+                    $dataSetResults = $dataSet->getData();
+
+                    foreach($columnIds as $dataSetColumnId) {
+                        $column = $dataSet->getColumn($dataSetColumnId);
+                        $optionalHtmlMessage = str_replace('['. $column->heading .']', $dataSetResults[0][$column->heading], $optionalHtmlMessage);
+                    }
+                }
+                catch (NotFoundException $e) {
+                    $this->getLog()->info(sprintf('Request failed for dataSet id=%d. Widget=%d. Due to %s', $dataSetId, $this->getWidgetId(), $e->getMessage()));
+                    $this->getLog()->debug($e->getTraceAsString());
+
+                    return $this->optionalHtmlMessageOrDefault();
+                }
+        }
+            return [
+                'html' => $optionalHtmlMessage,
+                'countPages' => 1,
+                'countRows' => 1
+            ];
     }
 
     /**
