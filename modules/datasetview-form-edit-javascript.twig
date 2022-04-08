@@ -33,21 +33,21 @@
                 $("#customfield").append(`
                     <div class="col-md-12 row custom-item">
                         <div class="connectedlist col-sm-5">
-                            <select class="li-sortable custom-header" >
+                            <select class="form-control custom-header" >
                                 {% for column in module.dataSetColumns() %}
-                                <option value="{{ column.heading}}" class="li-sortable"` + ('{{column.heading}}' == key? `selected>`:`>`) + `{{ column.heading }}</option>
+                                <option value="{{ column.heading}}" + ('{{column.heading}}' == key? 'selected>':'>') + '{{ column.heading }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="connectedlist col-sm-5">
-                            <input type="text" class="li-sortable custom-field" value="` + initalCustomField[key] +`">
+                            <input type="text" class="form-control custom-field" value="` + initalCustomField[key] +`">
                         </div>
                         <div class="connectedlist col-sm-2 remove-row">
-                            <input class="custom-field-button remove-btn" type="button" value="-">
+                            <input style="width:3vw;" class="form-control btn btn-danger custom-field-button remove-btn" type="button" value="-">
                         </div>
                     </div>
                 `);
-                
+
                 console.log('Key : ' + key + ', Value : ' + initalCustomField[key])
             })
         }
@@ -85,17 +85,17 @@
                 $("#customfield").append(`
                     <div class="col-md-12 row custom-item">
                         <div class="connectedlist col-sm-5">
-                            <select class="li-sortable custom-header" >
+                            <select class="form-control custom-header" >
                                 {% for column in module.dataSetColumns() %}
-                                <option value="{{ column.heading}}" class="li-sortable">{{ column.heading}}</option>
+                                <option value="{{ column.heading}}">{{ column.heading}}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="connectedlist col-sm-5">
-                            <input type="text" class="li-sortable custom-field" value=""">
+                            <input type="text" class="form-control custom-field" value=""">
                         </div>
                         <div class="connectedlist col-sm-2 remove-row">
-                        <input class="custom-field-button remove-btn" type="button" value="-">
+                        <input style="width:3vw;" class="btn btn-danger custom-field-button remove-btn" type="button" value="-">
                         </div>
                     </div>
                 `);
@@ -112,9 +112,9 @@
 
         $("#customfield").on("keyup", "input.custom-field", function(){
             let fieldArray = $("input.custom-field");
-            let selectArray = $(".custom-header"); 
+            let selectArray = $(".custom-header");
             let json={};
-            console.log(fieldArray); 
+            console.log(fieldArray);
             for(i=0;i<fieldArray.length;i++)
             {
                 let input = $(fieldArray[i]);
@@ -123,7 +123,7 @@
             }
             let jsonSring = JSON.stringify(json);
             console.log('===========', jsonSring)
-            $("input[name='customfield']").val(jsonSring); 
+            $("input[name='customfield']").val(jsonSring);
         })
-    });  
+    });
 </script>
