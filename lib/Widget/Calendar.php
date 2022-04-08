@@ -772,7 +772,7 @@ class Calendar extends ModuleWidget
 
             // Add this to the cache.
             $cache->set($document);
-            $cache->expiresAfter($this->getOption('updateInterval', 360) * 60);
+            $cache->expiresAfter($this->getOption('updateInterval', 360));
 
             // Save
             $this->getPool()->saveDeferred($cache);
@@ -925,7 +925,7 @@ class Calendar extends ModuleWidget
     /** @inheritdoc */
     public function getCacheDuration()
     {
-        return $this->getOption('updateInterval', 120) * 60;
+        return $this->getOption('updateInterval', 120);
     }
 
     /** @inheritdoc */
