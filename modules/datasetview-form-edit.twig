@@ -114,10 +114,6 @@
                         {% set helpText %}{% trans "Should the Table headings be shown?" %}{% endset %}
                         {{ forms.checkbox("showHeadings", title, module.getOption("showHeadings"), helpText) }}
 
-                        {% set title %}{% trans "Custom Field Talbe Name" %}{% endset %}
-                        {% set helpText %}{% trans "Tick to be custom heading." %}{% endset %}
-                        {{ forms.checkbox("custofieldlevel", title, module.getOption("showHeadings"), helpText) }}
-
                         <div id="customfield" class="row">
                             <input type="text" name="customfield" value="" hidden>
                             <div class="col-md-12 row">
