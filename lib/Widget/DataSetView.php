@@ -616,7 +616,7 @@ class DataSetView extends ModuleWidget
                     $("body").xiboLayoutScaler(options); 
                     $("#DataSetTableContainer").find("img").xiboImageRender(options);
 
-                    let runOnVisible = function() { $("#DataSetTableContainer").dataSetRender(options);  };
+                    let runOnVisible = function() { $("#DataSetTableContainer").dataSetRender(options);  }; 
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
                     
                     // Do we have a freshnessTimeout?
@@ -630,7 +630,6 @@ class DataSetView extends ModuleWidget
                         }, 10000);
                     }
                     setThresholdColor();
-
                 });
             ')
             ->appendJavaScript($this->parseLibraryReferences($this->isPreview(), $this->getRawNode('javaScript', '')))

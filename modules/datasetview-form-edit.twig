@@ -279,14 +279,11 @@
                         {% set helpText %}{% trans "If the Player is offline it will switch to the No Data Template after this freshness time. Set this to 0 to never switch." %}{% endset %}
                         {{ forms.number("freshnessTimeout", title, module.getOption("freshnessTimeout", 0), helpText) }}
                     </div>
-
                 </div>
 
                 <input type="hidden" name="step" value="2" />
-
                 {% include "datasetview-threshold-javascript.twig" %}  
             </form>
         </div>
     </div>
-
 {% endblock %}
