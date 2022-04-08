@@ -72,6 +72,33 @@
     </div>
 {% endmacro %}
 
+{% macro colorPickerDouble(name, title, value, value_header, helpText, groupClass, validation, accessKey) %}
+    <div class="form-group row {{ groupClass }}">
+        <label class="col-sm-2 control-label" for="{{ name }}" accesskey="{{ accessKey }}">{{ title }}</label>
+        <div class="col-sm-10">
+            <div class="row">
+                <div class="col-sm-6 colorpicker-input">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <i class="input-group-text input-group-addon" id="{{ name }}_label"></i>
+                        </div>
+                        <input class="form-control" name="{{ name }}" type="text" id="{{ name }}" aria-describedby="{{ name }}_label" value="{{ value }}" {{ validation }} />
+                    </div>
+                </div>
+                <div class="col-sm-6 colorpicker-input">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <i class="input-group-text input-group-addon" id="{{ name }}_label_header"></i>
+                        </div>
+                        <input class="form-control" name="{{ name }}_header" type="text" id="{{ name }}_header" aria-describedby="{{ name }}_label_header" value="{{ value_header }}" {{ validation }} />
+                    </div>
+                </div>
+            </div>
+            <small class="form-text text-muted">{{ helpText }}</small>
+        </div>
+    </div>
+{% endmacro %}
+
 {% macro inputWithButton(name, title, value, helpText, groupClass, validation, accessKey, buttonId, buttonTitle, buttonType, buttonLink) %}
     <div class="form-group row {{ groupClass }}">
         <label class="col-sm-2 control-label" for="{{ name }}" accesskey="{{ accessKey }}">{{ title }}</label>
@@ -124,6 +151,24 @@
         <div class="col-sm-10">
             <input class="form-control" name="{{ name }}" {% if maxNumber %}max="{{maxNumber}}"{% else %}max="526000"{% endif %} type="number" id="{{ name }}" value="{{ value }}" {{ validation }} />
             <small class="form-text text-muted">{{ helpText }}</small>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro numberDouble(name, title, value, value_header, helpText, groupClass, validation, accessKey, maxNumber) %}
+    <div class="form-group row {{ groupClass }}">
+        <label class="col-sm-2 control-label" for="{{ name }}" accesskey="{{ accessKey }}">{{ title }}</label>
+        <div class="col-sm-10">
+            <div class="row">
+                <div class="col-sm-6">
+                    <input class="form-control" name="{{ name }}" {% if maxNumber %}max="{{maxNumber}}"{% else %}max="526000"{% endif %} type="number" id="{{ name }}" value="{{ value }}" {{ validation }} />
+                    <small class="form-text text-muted">{{ helpText }}</small>
+                </div>
+                <div class="col-sm-6">
+                    <input class="form-control" name="{{ name }}_header" {% if maxNumber %}max="{{maxNumber}}"{% else %}max="526000"{% endif %} type="number" id="{{ name }}_heder" value="{{ value_header }}" {{ validation }} />
+                    <small class="form-text text-muted">{{ helpText }}</small>
+                </div>
+            </div>
         </div>
     </div>
 {% endmacro %}
@@ -263,6 +308,153 @@
             </select>
             <small class="form-text text-muted">{{ helpText }}</small>
         </div>
+    </div>
+{% endmacro %}
+
+{% macro dropdownDouble(name, type, title, value, options, optionId, optionValue, helpText, groupClass, validation, accessKey, callBack, dataAttributes, optionGroups, optionImageValue, optionFilter) %}
+    <div class="form-group row {{ groupClass }}">
+        <label class="col-sm-2 control-label" for="{{ name }}" accesskey="{{ accessKey }}">{{ title }}</label>
+        <div class="col-sm-10">
+            <div class="row">
+                <div class="col-sm-6">
+                    <select class="form-control" {% if type == "dropdownmulti" %}multiple{% endif %} name="{{ name }}" id="{{ name }}" {{ callBack }}
+                        {% if dataAttributes|length > 0 %}
+                            {% for attribute in dataAttributes %}
+                                {{ attribute.name }}="{{ attribute.value }}"
+                            {% endfor %}
+                        {% endif %}
+                    {{ validation }}>
+
+                    {% set hasGroups = optionGroups|length > 0 %}
+                    {% if not hasGroups %}
+                        {% set optionGroups = {label: "General"} %}
+                    {% endif %}
+
+                    {% for group in optionGroups %}
+                        {% if hasGroups %}
+                            <optgroup label="{{ group.label }}">
+                            {% set tempOptions = attribute(options, group.id) %}
+                        {% else %}
+                            {% set tempOptions = options %}
+                        {% endif %}
+
+                        {% for option in tempOptions %}
+
+                            {% if optionId == "" %}
+                                {% set itemOptionId = option %}
+                                {% set itemOptionValue = option %}
+                                {% if optionImageValue %}
+                                    {% set itemOptionImageValue = option %}
+                                {% endif %}
+                            {% else %}
+                                {% set itemOptionId = attribute(option, optionId) %}
+                                {% set itemOptionValue = attribute(option, optionValue) %}
+                                {% if optionImageValue %}
+                                    {% set itemOptionImageValue = attribute(option, optionImageValue) %}
+                                {% endif %}
+                            {% endif %}
+
+                            {% if type == "dropdownmulti" %}
+                                {% set selected = (itemOptionId in value) %}
+                            {% else %}
+                                {% set selected = (itemOptionId == value) %}
+                            {% endif %}
+
+                            <option value="{{ itemOptionId }}" {% if selected %}selected{% endif %}
+                                    {% if itemOptionImageValue %}
+                                        data-content="<span class='media'><span class='media-left mr-2'><img style='max-width: 100px; max-height: 80px;' src='{{ itemOptionImageValue }}' /></span> <span class='media-body'>{{ itemOptionValue }}</span></span>"
+                                    {% endif %}
+
+                                    {% if optionFilter %}
+                                        {% if optionFilter[0] is not defined %}
+                                            data-filter-class="{{ attribute(option, optionFilter) }}" 
+                                        {% else %}
+                                            {% for filter in optionFilter %}
+                                                data-filter{{ loop.index0 }}-class="{{  attribute(option, filter) }}" 
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
+                            >{{ itemOptionValue }}</option>
+                        {% endfor %}
+
+                        {% if hasGroups %}
+                            </optgroup>
+                        {% endif %}
+                    {% endfor %}
+
+                    </select>
+                </div>
+                <div class="col-sm-6">
+                    <select class="form-control" {% if type == "dropdownmulti" %}multiple{% endif %} name="{{ name }}_header" id="{{ name }}_header" {{ callBack }}
+                        {% if dataAttributes|length > 0 %}
+                            {% for attribute in dataAttributes %}
+                                {{ attribute.name }}="{{ attribute.value }}"
+                            {% endfor %}
+                        {% endif %}
+                    {{ validation }}>
+
+                    {% set hasGroups = optionGroups|length > 0 %}
+                    {% if not hasGroups %}
+                        {% set optionGroups = {label: "General"} %}
+                    {% endif %}
+
+                    {% for group in optionGroups %}
+                        {% if hasGroups %}
+                            <optgroup label="{{ group.label }}">
+                            {% set tempOptions = attribute(options, group.id) %}
+                        {% else %}
+                            {% set tempOptions = options %}
+                        {% endif %}
+                        {% for option in tempOptions %}
+
+                            {% if optionId == "" %}
+                                {% set itemOptionId = option %}
+                                {% set itemOptionValue = option %}
+                                {% if optionImageValue %}
+                                    {% set itemOptionImageValue = option %}
+                                {% endif %}
+                            {% else %}
+                                {% set itemOptionId = attribute(option, optionId) %}
+                                {% set itemOptionValue = attribute(option, optionValue) %}
+                                {% if optionImageValue %}
+                                    {% set itemOptionImageValue = attribute(option, optionImageValue) %}
+                                {% endif %}
+                            {% endif %}
+
+                            {% if type == "dropdownmulti" %}
+                                {% set selected = (itemOptionId in value) %}
+                            {% else %}
+                                {% set selected = (itemOptionId == value) %}
+                            {% endif %}
+
+                            <option value="{{ itemOptionId }}" {% if selected %}selected{% endif %}
+                                    {% if itemOptionImageValue %}
+                                        data-content="<span class='media'><span class='media-left mr-2'><img style='max-width: 100px; max-height: 80px;' src='{{ itemOptionImageValue }}' /></span> <span class='media-body'>{{ itemOptionValue }}</span></span>"
+                                    {% endif %}
+
+                                    {% if optionFilter %}
+                                        {% if optionFilter[0] is not defined %}
+                                            data-filter-class="{{ attribute(option, optionFilter) }}" 
+                                        {% else %}
+                                            {% for filter in optionFilter %}
+                                                data-filter{{ loop.index0 }}-class="{{  attribute(option, filter) }}" 
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
+                            ></option>
+                        {% endfor %}
+
+                        {% if hasGroups %}
+                            </optgroup>
+                        {% endif %}
+                    {% endfor %}
+
+                    </select>
+                </div>
+                <small class="form-text text-muted">{{ helpText }}</small>
+            </div>
+        </div>
+        
     </div>
 {% endmacro %}
 
