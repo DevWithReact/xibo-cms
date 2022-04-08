@@ -35,7 +35,7 @@
                         <div class="connectedlist col-sm-5">
                             <select class="form-control custom-header" >
                                 {% for column in module.dataSetColumns() %}
-                                <option value="{{ column.heading}}" + ('{{column.heading}}' == key? 'selected>':'>') + '{{ column.heading }}</option>
+                                <option value="{{ column.heading}}" class="li-sortable"` + ('{{column.heading}}' == key? `selected>`:`>`) + `{{ column.heading }}</option>
                                 {% endfor %}
                             </select>
                         </div>
