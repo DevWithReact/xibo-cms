@@ -66,6 +66,7 @@
 
         if($(this).find('form').data('formStep') === 2) {
             var form = $("#dataSetViewEditForm2");
+            let jsonThreshold = {}; 
 
             // Clean the previous generated hidden dataSetColumns from the form
             form.find('input[name="dataSetColumnId[]"]').remove();
@@ -75,9 +76,20 @@
                 form.append('<input type="hidden" name="dataSetColumnId[]" value="' + this + '" />');
             });
 
+            $('.threshold-item').each(function(){
+
+                let keyThreshold = $(this).find('.threshod-item-value').val();
+                let valueThreshold = $(this).find('.threshod-item-color').val();
+                console.log(keyThreshold) ; 
+                console.log(valueThreshold); 
+                jsonThreshold[keyThreshold] = valueThreshold; 
+            })
+            $('input[name="thresholdjson"').val(JSON.stringify(jsonThreshold));      
+
             form.data("apply", true);
 
             formHelpers.updateCKEditor();
+
         }
     }
 

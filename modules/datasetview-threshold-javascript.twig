@@ -1,0 +1,92 @@
+{#
+/**
+ * Copyright (C) 2020 Xibo Signage Ltd
+ *
+ * Xibo - Digital Signage - http://www.xibo.org.uk
+ *
+ * This file is part of Xibo.
+ *
+ * Xibo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * Xibo is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with Xibo.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#}
+
+
+<script type="text/javascript">
+    $(document).ready(function(){
+
+        loadInitThreshold(); 
+
+        $('.btn-add-threshold').on('click', function(){
+            $('.content-threshold').append(`
+                <div class="threshold-item row">
+                    <div class="col-sm-5">
+                        <input type='number' value='0' class='form-control threshod-item-value'>
+                    </div>
+                    <div class="col-sm-5 colorpicker-input">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <i class="input-group-text input-group-addon" ></i>
+                            </div>
+                            <input class="form-control threshod-item-color" type="text" value="#000000" />
+                        </div>
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="button" class="btn btn-info btn-remove-threshold" value="-">
+                    </div> 
+                </div>
+            `);
+            $(".colorpicker-input").colorpicker(); 
+        });
+
+        $('body').on('click', '.btn-remove-threshold', function(){
+            console.log('you clicked the remove button '); 
+            remvoeThresholdItem($(this)); 
+        });
+
+        function remvoeThresholdItem(obj){
+            $(obj).parent().parent().remove(); 
+        }
+
+        function loadInitThreshold(){
+          let initalThreshold =`{{ module.getOption('threshold')}}`;
+            if (initalThreshold != '') {
+
+                initalThreshold =JSON.parse($('<textarea />').html(initalThreshold).text());
+
+                Object.keys(initalThreshold).forEach(function(key) {
+                   $('.content-threshold').append(`
+                        <div class="threshold-item row">
+                            <div class="col-sm-5">
+                                <input type='number' value='`+ key +`' class='form-control threshod-item-value'>
+                            </div>
+                            <div class="col-sm-5 colorpicker-input">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <i class="input-group-text input-group-addon" ></i>
+                                    </div>
+                                    <input class="form-control threshod-item-color" type="text" value="` + initalThreshold[key] + `" />
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <input type="button" class="btn btn-info btn-remove-threshold" value="-">
+                            </div> 
+                        </div>
+                    `);
+                    $(".colorpicker-input").colorpicker();           
+                });   
+            }   
+        }
+
+    });
+</script>
