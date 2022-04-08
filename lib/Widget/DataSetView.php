@@ -43,7 +43,7 @@ class DataSetView extends ModuleWidget
     {
         // Extends parent's method
         parent::installFiles();
-        
+
         $this->mediaFactory->createModuleSystemFile(PROJECT_ROOT . '/modules/vendor/jquery-cycle-2.1.6.min.js')->save();
         $this->mediaFactory->createModuleSystemFile(PROJECT_ROOT . '/modules/vendor/moment.js')->save();
         $this->mediaFactory->createModuleSystemFile(PROJECT_ROOT . '/modules/xibo-dataset-render.js')->save();
@@ -150,18 +150,18 @@ class DataSetView extends ModuleWidget
 
         $columnsSelected = [];
         $colIds = explode(',', $this->getOption('columns'));
-        
+
         // Cycle elements of the ordered columns Ids array $colIds
         foreach ($colIds as $colId) {
             // Cycle data set columns $columns
             foreach ($columns as $column) {
                 // See if the element on the odered list is the column
                 if ($column->dataSetColumnId == $colId) {
-                    $columnsSelected[] = $column; 
+                    $columnsSelected[] = $column;
                 }
             }
         }
-        
+
         return $columnsSelected;
     }
 
@@ -479,6 +479,7 @@ class DataSetView extends ModuleWidget
             }
 
             // Other properties
+            $this->setOption('customField', $sanitizedParams->getString('customfield'));
             $this->setOption('name', $sanitizedParams->getString('name'));
             $this->setUseDuration($sanitizedParams->getCheckbox('useDuration'));
             $this->setDuration($sanitizedParams->getInt('duration', ['default' => $this->getDuration()]));
@@ -586,21 +587,21 @@ class DataSetView extends ModuleWidget
             ->appendFontCss()
             ->appendCss(file_get_contents($this->getConfig()->uri('css/client.css', true)))
         ;
-    
+
         // Get CSS from the original template or from the input field
         $styleSheet = '';
 
         if ($this->getOption('overrideTemplate', 1) == 0) {
-            
+
             $template = $this->getTemplateById($this->getOption('templateId'));
-            
+
             if (isset($template)) {
                 $styleSheet = $template['css'];
             }
         } else {
             $styleSheet = $this->getRawNode('styleSheet', '');
         }
-        
+
         // Get the embedded HTML out of RAW
         $styleSheet = $this->parseLibraryReferences($this->isPreview(), $styleSheet);
 
@@ -658,12 +659,12 @@ class DataSetView extends ModuleWidget
             ])
             ->appendJavaScript('
                 $(document).ready(function() {
-                    $("body").xiboLayoutScaler(options); 
+                    $("body").xiboLayoutScaler(options);
                     $("#DataSetTableContainer").find("img").xiboImageRender(options);
 
                     var runOnVisible = function() { $("#DataSetTableContainer").dataSetRender(options);  };
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
-                    
+
                     // Do we have a freshnessTimeout?
                     if (options.freshnessTimeout > 0) {
                         // Set up an interval to check whether or not we have exceeded our freshness
@@ -806,6 +807,7 @@ class DataSetView extends ModuleWidget
                 }
             } else {
                 $dataSet = $this->dataSetFactory->getById($dataSetId);
+                $customHeading = (array)json_decode($this->getOption('customField'));
 
                 // Get an array representing the id->heading mappings
                 $mappings = [];
@@ -813,9 +815,13 @@ class DataSetView extends ModuleWidget
                     // Get the column definition this represents
                     $column = $dataSet->getColumn($dataSetColumnId);
                     /* @var DataSetColumn $column */
+                    $customHeading[$column->heading] = isset($customHeading[$column->heading])
+                                                            ?$customHeading[$column->heading]
+                                                            :null;
 
                     $mappings[] = [
                         'dataSetColumnId' => $dataSetColumnId,
+                        'customHeading' => is_null($customHeading[$column->heading])? $column->heading : $customHeading[$column->heading],
                         'heading' => $column->heading,
                         'dataTypeId' => $column->dataTypeId
                     ];
@@ -892,7 +898,7 @@ class DataSetView extends ModuleWidget
                         $table .= ' <tr class="HeaderRow">';
 
                         foreach ($mappings as $mapping) {
-                            $table .= '<th class="DataSetColumnHeaderCell">' . $mapping['heading'] . '</th>';
+                            $table .= '<th class="DataSetColumnHeaderCell">' . $mapping['customHeading'] . '</th>';
                         }
 
                         $table .= ' </tr>';

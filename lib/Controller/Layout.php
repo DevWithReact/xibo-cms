@@ -245,7 +245,6 @@ class Layout extends Base
                     return $module;
                 }, $moduleFactory->getAssignableModules())
         ];
-
         // Call the render the template
         $this->getState()->template = 'layout-designer-page';
         $this->getState()->setData($data);
@@ -1893,7 +1892,6 @@ class Layout extends Base
         // Check Permissions
         if (!$this->getUser()->checkEditable($layout))
             throw new AccessDeniedException();
-            
         // Edits always happen on Drafts, get the draft Layout using the Parent Layout ID
         if ($layout->schemaVersion < 2) {
             $resolution = $this->resolutionFactory->getByDesignerDimensions($layout->width, $layout->height);

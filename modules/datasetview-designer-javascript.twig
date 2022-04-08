@@ -29,7 +29,7 @@
         if($(this).find('form').data('formStep') === 1) {
             // If data set exists, set the drop-down to that value
             var dataSetId = $(this).find('form').data().elementOptions.dataSetId;
-            
+
             if(dataSetId !== undefined) {
                 $(this).find('#dataSetId').val(dataSetId);
             }
@@ -50,7 +50,7 @@
             formHelpers.setupDualTypeTextArea(this, 'noDataMessage');
 
             // Setup template override
-            formHelpers.setupTemplateOverriding(this, '#overrideTemplate', '#templateId', 
+            formHelpers.setupTemplateOverriding(this, '#overrideTemplate', '#templateId',
             {
                 '#styleSheet': 'css'
             });
@@ -61,7 +61,7 @@
 
     // Runs before form submit
     function datasetview_form_edit_submit() {
-        
+
         if($(this).find('form').data('formStep') === 2) {
             var form = $("#dataSetViewEditForm2");
 
@@ -74,7 +74,7 @@
             });
 
             form.data("apply", true);
-            
+
             formHelpers.updateCKEditor();
         }
     }

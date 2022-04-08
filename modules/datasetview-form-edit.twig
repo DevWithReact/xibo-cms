@@ -115,7 +115,18 @@
                         {% set title %}{% trans "Show the table headings?" %}{% endset %}
                         {% set helpText %}{% trans "Should the Table headings be shown?" %}{% endset %}
                         {{ forms.checkbox("showHeadings", title, module.getOption("showHeadings"), helpText) }}
-                        
+
+                        <div id="customfield" class="row">
+                            <input type="text" name="customfield" value="" hidden>
+                            <div class="col-md-12 row">
+                                <label align-items: center;" class="connectedlist col-sm-10 custom-field-label">Custom Field Talbe Name </label>
+                                <div class="connectedlist col-sm-2">
+                                    <input class="btn btn-info ml-0 custom-field-button add-btn" type="button" value="Add">
+                                </div>
+
+                            </div>
+                        </div>
+
                         {% set title %}{% trans "Lower Row Limit" %}{% endset %}
                         {% set helpText %}{% trans "Please enter the Lower Row Limit for this DataSet (enter 0 for no limit)')" %}{% endset %}
                         {{ forms.number("lowerLimit", title, module.getOption("lowerLimit"), helpText) }}
@@ -140,7 +151,7 @@
                         {{ forms.checkbox("overrideTemplate", title, module.getOption("overrideTemplate", "0"), helpText) }}
 
                         {% set useTemplatesMessage %}
-                           {% trans "With Override the Template selected enter your own text, html and css by using the Templates drop down menu in the tab header above." %}                     
+                           {% trans "With Override the Template selected enter your own text, html and css by using the Templates drop down menu in the tab header above." %}
                         {% endset %}
                         {{ forms.message(useTemplatesMessage, 'template-override-controls') }}
 
@@ -175,15 +186,15 @@
                         <div class="form-content-title row">
                             <h4 class="col-6 text-left">{% trans "No Data Template" %}</h4>
                             <div class="col-6 text-right">
-                                <input type="checkbox" class="bootstrap-switch-target" id="noDataMessage_advanced" name="noDataMessage_advanced" {% if module.getOption("noDataMessage_advanced", 0) == 1 %}checked{% endif %} 
-                                    data-size="small" 
-                                    data-label-text="{% trans "Visual editor" %}" 
-                                    data-label-width="80px" 
-                                    data-on-text="{% trans "On" %}" 
+                                <input type="checkbox" class="bootstrap-switch-target" id="noDataMessage_advanced" name="noDataMessage_advanced" {% if module.getOption("noDataMessage_advanced", 0) == 1 %}checked{% endif %}
+                                    data-size="small"
+                                    data-label-text="{% trans "Visual editor" %}"
+                                    data-label-width="80px"
+                                    data-on-text="{% trans "On" %}"
                                     data-off-text="{% trans "Off" %}">
                             </div>
                         </div>
-                        
+
                         {% set noDataMessageMessage1 %}
                             {% trans "Enter text or HTML in the box below." %}<br>
                         {% endset %}
@@ -272,4 +283,5 @@
             </form>
         </div>
     </div>
+    {% include "datasetview-form-edit-javascript.twig" %}
 {% endblock %}
