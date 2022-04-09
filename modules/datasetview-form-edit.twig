@@ -120,13 +120,8 @@
 
                         <div id="customfield" class="row">
                             <input type="text" name="customfield" value="" hidden>
-                            <div class="col-md-12 row">
-                                <label align-items: center;" class="connectedlist col-sm-10 custom-field-label">Custom Field Talbe Name </label>
-                                <div class="connectedlist col-sm-2">
-                                    <input class="btn btn-info ml-0 custom-field-button add-btn" type="button" value="Add">
-                                </div>
-
-                            </div>
+                            <input style="height:fit-content;" type="button" class="btn btn-info col-sm-5 custom-field-button add-btn" value="Add Custom Header">
+                            <label class="col-sm-7">Press Add button to customize table header name.</label>
                         </div>
                         
                         {% set title %}{% trans "DateTime Formatting" %}{% endset %}
@@ -166,7 +161,7 @@
                         {% set helpText %}{% trans "Tick if you would like to override optional HTML." %}{% endset %}
                         {{ forms.checkbox("optionalHtml", title, module.getOption("optionalHtml", "0"), helpText) }}
 
-                        <div class="row">
+                        <div class="row template-selector-control">
                             <p class="text-info text-center col-sm-2">{% trans "" %}</p>
                             <p class="text-info text-center col-sm-5">{% trans "Table Body" %}</p>
                             <p class="text-info text-center col-sm-5">{% trans "Table Header" %}</p>
@@ -208,7 +203,7 @@
 
                         <div class="row add-threshold">
                             <input type='text' value='' name="thresholdjson" hidden>
-                            <input type="button" class="btn btn-info col-sm-4 btn-add-threshold" value="Add Threshold">
+                            <input style="height:fit-content;"type="button" class="btn btn-info col-sm-4 btn-add-threshold" value="Add Threshold">
                             <label class="col-sm-8">Press Add button to add threshold color for dataset view.</label>
                         </div> 
 

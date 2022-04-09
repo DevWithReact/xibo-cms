@@ -80,8 +80,6 @@
 
                 let keyThreshold = $(this).find('.threshod-item-value').val();
                 let valueThreshold = $(this).find('.threshod-item-color').val();
-                console.log(keyThreshold) ; 
-                console.log(valueThreshold); 
                 jsonThreshold[keyThreshold] = valueThreshold; 
             })
             $('input[name="thresholdjson"').val(JSON.stringify(jsonThreshold));      

@@ -162,12 +162,11 @@
             <div class="row">
                 <div class="col-sm-6">
                     <input class="form-control" name="{{ name }}" {% if maxNumber %}max="{{maxNumber}}"{% else %}max="526000"{% endif %} type="number" id="{{ name }}" value="{{ value }}" {{ validation }} />
-                    <small class="form-text text-muted">{{ helpText }}</small>
                 </div>
                 <div class="col-sm-6">
                     <input class="form-control" name="{{ name }}_header" {% if maxNumber %}max="{{maxNumber}}"{% else %}max="526000"{% endif %} type="number" id="{{ name }}_heder" value="{{ value_header }}" {{ validation }} />
-                    <small class="form-text text-muted">{{ helpText }}</small>
                 </div>
+                <small class="form-text text-muted">{{ helpText }}</small>
             </div>
         </div>
     </div>

@@ -1026,9 +1026,9 @@ class DataSetView extends ModuleWidget
                             : '<img src="' . $file->storedAs . '" />';
                     }
 
-                    if(preg_match("/^[0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/", $replace)){
+                    if(strlen(trim(preg_replace('/\xc2\xa0/',' ',$dataTimeFormatPattern))) != 0 && preg_match("/^[0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/", $replace)){
                         $replace = date_create($replace); 
-                        $replace =date_format($replace, $dataTimeFormatPattern); 
+                        $replace =date_format($replace, trim($dataTimeFormatPattern)); 
                     }
 
                     $table .= '<td class="DataSetColumn DataSetColumn_' . $i . '" id="column_' . ($i + 1) . '"><span class="DataSetCellSpan DataSetCellSpan_' . $rowCount . '_' . $i .'" id="span_' . $rowCount . '_' . ($i + 1) . '">' . $replace . '</span></td>';
