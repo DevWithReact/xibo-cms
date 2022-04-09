@@ -498,6 +498,8 @@ class Calendar extends ModuleWidget
         $this->setOption('name', $sanitizedParams->getString('name'));
         $this->setOption('eventLabelNow', $sanitizedParams->getString('eventLabelNow'));
         $this->setOption('calendarType', $sanitizedParams->getInt('calendarType', ['default' => 1]));
+        $this->setOption('skipNoData', $sanitizedParams->getCheckbox('skipNoData'));
+        
 
         $this->setOption('useiCal', $sanitizedParams->getCheckbox('useiCal'));
         if ($sanitizedParams->getCheckbox('useiCal') == 1) {
@@ -654,7 +656,8 @@ class Calendar extends ModuleWidget
             'aditionalEventsBgColor' => $this->getOption('aditionalEventsBgColor'),
             'aditionalEventsTextColor' => $this->getOption('aditionalEventsTextColor'),
             'noEventsBgColor' => $this->getOption('noEventsBgColor'),
-            'noEventsTextColor' => $this->getOption('noEventsTextColor')
+            'noEventsTextColor' => $this->getOption('noEventsTextColor'),
+            'skipNoData' => $this->getOption('skipNoData')
         ];
 
         // Include some vendor items and javascript
@@ -681,6 +684,7 @@ class Calendar extends ModuleWidget
                     var ongoingEvent = false;
                     var noEventTrigger = ' . ($this->getOption('noEventTrigger', '') == '' ? 'false' : ('"' . $this->getOption('noEventTrigger') . '"')) . ';
                     var currentEventTrigger = ' . ($this->getOption('currentEventTrigger', '') == '' ? 'false' : ('"' . $this->getOption('currentEventTrigger'). '"')) . ';
+                    var skipNoData = ' . $this->getOption('skipNoData') . ';
 
                     // Prepare the items array, sorting it and removing any items that have expired.
                     $.each(items, function(index, element) {
@@ -709,9 +713,16 @@ class Calendar extends ModuleWidget
                     var runOnVisible = function() { $("#content").xiboTextRender(options, parsedItems); };
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
 
+                    // Close widget and skip it.
+                    if (items.length == 0 && skipNoData == 1) {
+                        xiboIC.setWidgetDuration(0);
+                        return;
+                    }
+
                     // Run calendar render
                     $("body").xiboCalendarRender(options, parsedItems);
                     
+                    console.log("noEventTrigger", items);
                     if(ongoingEvent && currentEventTrigger) {
                         // If there is an event now, send the Current Event trigger ( if exists )
                         xiboIC.trigger(currentEventTrigger);
