@@ -38,6 +38,7 @@
             <li class="nav-item"><a class="nav-link" href="#configurationTab" role="tab" data-toggle="tab"><span>{% trans "Configuration" %}</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#appearanceTab" role="tab" data-toggle="tab"><span>{% trans "Appearance" %}</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#cachingTab" role="tab" data-toggle="tab"><span>{% trans "Caching" %}</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="#optionalJavascriptTab" role="tab" data-toggle="tab"><span>{% trans "optionalJavascript" %}</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#triggerTab" role="tab" data-toggle="tab"><span>{% trans "Trigger" %}</span></a></li>
         </ul>
 
@@ -315,6 +316,14 @@
                         {% set title %}{% trans "Update Interval (mins)" %}{% endset %}
                         {% set helpText %}{% trans "Please enter the update interval in minutes. This should be kept as high as possible. For example, if the data will only change once per hour this could be set to 60." %}{% endset %}
                         {{ forms.number("updateInterval", title, module.getOption("updateInterval", 5), helpText, "", "required") }}
+                    </div>
+
+                    <div class="tab-pane" id="optionalJavascriptTab">
+                        <div class="form-content-title">
+                            <h4>{% trans "Optional JavaScript" %}</h4>
+                        </div>
+
+                        {{ forms.textarea("javaScript", "", module.getRawNode("javaScript"), "", "", "", 10) }}
                     </div>
 
                     <div class="tab-pane" id="triggerTab">
