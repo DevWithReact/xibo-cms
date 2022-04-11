@@ -868,11 +868,17 @@ class DataSetView extends ModuleWidget
         try {
             if ($this->getOption('useQuery') == '1') {
                 $columns = $this->getCustomQueryColumns();
+                $customHeading = (array)json_decode($this->getOption('customField'));
                 $mappings = [];
                 foreach ($columns as $c) {
+                    /* @var DataSetColumn $column */
+                    $customHeading[$c->heading] = isset($customHeading[$c->heading])
+                                                            ?$customHeading[$c->heading]
+                                                            :null;
                     if (in_array($c->dataSetColumnId, $columnIds)) {
                         $mappings[] = [
                             'dataSetColumnId' => $c->dataSetColumnId,
+                            'customHeading' => is_null($customHeading[$c->heading])? $c->heading : $customHeading[$c->heading],
                             'heading' => $c->dataSetColumnId,
                             'dataTypeId' => 1
                         ];
