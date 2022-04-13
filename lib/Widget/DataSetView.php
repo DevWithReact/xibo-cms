@@ -679,7 +679,8 @@ class DataSetView extends ModuleWidget
                 'durationIsPerItem' => (($durationIsPerItem == 0) ? false : true),
                 'generatedOn' => Carbon::now()->format('c'),
                 'freshnessTimeout' => $this->getOption('freshnessTimeout', 0),
-                'noDataMessage' => $this->noDataMessageOrDefault('')['html']
+                'noDataMessage' => $this->noDataMessageOrDefault('')['html'],
+                'updatesInterval' => $this->getOption('updateInterval', 30000)
             ])
             ->appendJavaScript('
                 function getKeyIndex(array, value){
@@ -732,6 +733,9 @@ class DataSetView extends ModuleWidget
                     let runOnVisible = function() { $("#DataSetTableContainer").dataSetRender(options);  }; 
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
 
+                    setInterval(() => {
+                        window.location.reload();
+                    }, options.updatesInterval * 1000);
                     // Do we have a freshnessTimeout?
                     if (options.freshnessTimeout > 0) {
                         // Set up an interval to check whether or not we have exceeded our freshness
