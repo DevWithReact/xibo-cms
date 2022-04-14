@@ -1135,26 +1135,33 @@ class DataSetView extends ModuleWidget
             throw new NotFoundException($default);
         } else{
                 try {
-                    $dataSet = $this->dataSetFactory->getById($dataSetId);
-                    $dataSetResults = $dataSet->getData();
+                    if ($this->isCustomQuery()) {
+                        $columns = $this->getCustomQueryColumns();
+                        $dataSetResults = $this->getCustomData();
+                        foreach($columns as $column) {
+                            $optionalHtmlMessage = str_replace('['. $column->heading .']', $dataSetResults[0][$column->heading], $optionalHtmlMessage);
+                        }
+                    } else {
+                        $dataSet = $this->dataSetFactory->getById($dataSetId);
+                        $dataSetResults = $dataSet->getData();
 
-                    foreach($columnIds as $dataSetColumnId) {
-                        $column = $dataSet->getColumn($dataSetColumnId);
-                        $optionalHtmlMessage = str_replace('['. $column->heading .']', $dataSetResults[0][$column->heading], $optionalHtmlMessage);
+                        foreach($columnIds as $dataSetColumnId) {
+                            $column = $dataSet->getColumn($dataSetColumnId);
+                            $optionalHtmlMessage = str_replace('['. $column->heading .']', $dataSetResults[0][$column->heading], $optionalHtmlMessage);
+                        }
                     }
                 }
                 catch (NotFoundException $e) {
                     $this->getLog()->info(sprintf('Request failed for dataSet id=%d. Widget=%d. Due to %s', $dataSetId, $this->getWidgetId(), $e->getMessage()));
                     $this->getLog()->debug($e->getTraceAsString());
-
-                    return $this->optionalHtmlMessageOrDefault();
+                    throw new GeneralException('[optionalHtmlMessageOrDefault] Column Data not Found. '.$e->getMessage());
                 }
         }
-            return [
-                'html' => $optionalHtmlMessage,
-                'countPages' => 1,
-                'countRows' => 1
-            ];
+        return [
+            'html' => $optionalHtmlMessage,
+            'countPages' => 1,
+            'countRows' => 1
+        ];
     }
 
     /**
