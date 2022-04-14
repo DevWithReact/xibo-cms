@@ -508,6 +508,8 @@ class DataSetView extends ModuleWidget
             $this->setRawNode('javaScript', $request->getParam('javaScript', ''));
 
             $this->setOption('backgroundColor', $sanitizedParams->getString('backgroundColor'));
+            $this->setOption('alterBackColor', $sanitizedParams->getString('alterBackColor'));
+            $this->setOption('setEvenColor', $sanitizedParams->getCheckbox('setEvenColor'));
             $this->setOption('backgroundColorHeader', $sanitizedParams->getString('backgroundColor_header'));
             $this->setOption('borderColor', $sanitizedParams->getString('borderColor'));
             $this->setOption('fontColor', $sanitizedParams->getString('fontColor'));
@@ -620,7 +622,10 @@ class DataSetView extends ModuleWidget
 
         // If we have some options then add them to the end of the style sheet
         if ($this->getOption('backgroundColor') != '' && $this->getOption('templateId') == 'empty') {
-            $styleSheet .= 'table.DataSetTable tbody { background-color: ' . $this->getOption('backgroundColor') . '; }';
+            (bool)$this->getOption('setEvenColor') 
+                ? $styleSheet .= 'table.DataSetTable tbody tr:nth-child(odd) { background-color: ' . $this->getOption('backgroundColor') . '; }'
+                                .'table.DataSetTable tbody tr:nth-child(even) { background-color: ' . $this->getOption('alterBackColor') . '; }'
+                : $styleSheet .= 'table.DataSetTable tbody tr { background-color: ' . $this->getOption('backgroundColor') . '; }';
         }
         if ($this->getOption('backgroundColorHeader') != '' && $this->getOption('templateId') == 'empty') {
             $styleSheet .= 'table.DataSetTable thead { background-color: ' . $this->getOption('backgroundColorHeader') . '; }';

@@ -167,18 +167,28 @@
                             <p class="text-info text-center col-sm-5">{% trans "Table Header" %}</p>
                         </div>
 
-                        <div class="template-selector-default">
+                        <div class="template-selector-control">
                             {% set title %}{% trans "Background Colour" %}{% endset %}
                             {% set helpText %}{% trans "Use the colour picker to select the background colour" %}{% endset %}
-                            {{ _self.colorPickerDouble("backgroundColor", title, module.getOption("backgroundColor"), module.getOption("backgroundColorHeader"), helpText, "template-selector-control") }}
+                            {{ _self.colorPickerDouble("backgroundColor", title, module.getOption("backgroundColor"), module.getOption("backgroundColorHeader"), helpText) }}
+
+                            {% set title %}{% trans "Alternative BackgroundColor" %}{% endset %}
+                            {% set helpText %}{% trans "Tick to set alternative background color " %}{% endset %}
+                            {{ forms.checkbox("setEvenColor", title, module.getOption("setEvenColor", "0"), helpText) }}
+                            
+                            <div class="alter-backcolor">
+                                {% set title %}{% trans "Alternative Backcolour" %}{% endset %}
+                                {% set helpText %}{% trans "Use the colour picker to select the Alternative Background colour" %}{% endset %}
+                                {{ forms.colorPicker("alterBackColor", title, module.getOption("alterBackColor"), helpText) }}
+                            </div>
 
                             {% set title %}{% trans "Border Colour" %}{% endset %}
                             {% set helpText %}{% trans "Use the colour picker to select the border colour" %}{% endset %}
-                            {{ forms.colorPicker("borderColor", title, module.getOption("borderColor"), helpText, "template-selector-control") }}
+                            {{ forms.colorPicker("borderColor", title, module.getOption("borderColor"), helpText) }}
 
                             {% set title %}{% trans "Font Colour" %}{% endset %}
                             {% set helpText %}{% trans "Use the colour picker to select the font colour" %}{% endset %}
-                            {{ _self.colorPickerDouble("fontColor", title, module.getOption("fontColor"), module.getOption("fontColorHeader"), helpText, "template-selector-control") }}
+                            {{ _self.colorPickerDouble("fontColor", title, module.getOption("fontColor"), module.getOption("fontColorHeader"), helpText) }}
                         </div>
 
                         {% set title %}{% trans "Font" %}{% endset %}

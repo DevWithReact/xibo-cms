@@ -39,6 +39,9 @@
             // Set override template field, using the helper ()
             formHelpers.setupCheckboxInputFields($(this), '#overrideTemplate', '.template-override-controls', '.template-selector-control');
 
+            // Set alternative background color using the helper ()
+            formHelpers.setupCheckboxInputFields($(this), '#setEvenColor', '.alter-backcolor');
+
             formHelpers.setupCheckboxInputFields($(this), '#optionalHtml', '.template-optionalhtml-controls')
             // Set clock type input field, using the helper ()
             formHelpers.setupObjectValueInputFields($(this), '#templateId', ['.template-selector-default'], ['empty']);
