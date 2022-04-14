@@ -95,11 +95,10 @@ class DataSetView extends ModuleWidget
         $useQuery = $this->getOption('useQuery');
         try {
             $pdo->connect($customHost, $customDBUser, $customDBPassword, $customDBName);
-            $randomName = 'temp'.random_int(0, 10000);
             $result = $pdo->select($customSql,[]);
             return $result;
         } catch (\PDOException $e) {
-            throw new GeneralException('Custom Database connection Faied. '.$e->getMessage());
+            throw new GeneralException('[getCustomData] Custom Database connection Faied. ['.$customSql.'], '.$e->getMessage());
         }
     }
 
@@ -114,6 +113,14 @@ class DataSetView extends ModuleWidget
         try {
             $pdo->connect($customHost, $customDBUser, $customDBPassword, $customDBName);
             $randomName = 'temp'.random_int(0, 10000);
+            if (preg_match('/limit\s+(\d+)/i', $customSql) == 1) {
+                $pattern = '/limit\s+(\d+)/i';
+                $replacement = 'limit 1';
+                $customSql = preg_replace($pattern, $replacement, $customSql);
+            } else {
+                str_replace(';', '', $customSql);
+                $customSql = $customSql . ' limit 1;';
+            }
             $pdo->select('create view '.$randomName.' as '.$customSql,[]);
             $rows= $pdo->select('select COLUMN_NAME from information_schema.COLUMNS where TABLE_NAME=\''.$randomName.'\';',[]);
             $pdo->select('drop view '.$randomName, []);
@@ -127,7 +134,7 @@ class DataSetView extends ModuleWidget
             }
             return $columns;
         } catch (\PDOException $e) {
-            throw new GeneralException('Custom Database connection Faied. '.$e->getMessage());
+            throw new GeneralException('[getCustomQueryColumns] Custom Database connection Faied. ['.$customSql.'] ,'.$e->getMessage());
         }
         
     }
@@ -436,7 +443,7 @@ class DataSetView extends ModuleWidget
                         $this->setOption('dataSetId', 0);
                     }
                 } catch (\PDOException $e) {
-                    throw new GeneralException('Custom Database connection Faied. '.$e->getMessage());
+                    throw new GeneralException('[edit] Custom Database connection Faied. '.$e->getMessage());
                 }
             } else {
                 // Do we already have a DataSet?
