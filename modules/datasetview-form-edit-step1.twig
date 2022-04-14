@@ -59,7 +59,7 @@
                 {% set title %}{% trans "Connection User name" %}{% endset %}
                 {{ forms.input("customDBUser", title, module.getOption("customDBUser"), helpText) }}
                 {% set title %}{% trans "Connection Password" %}{% endset %}
-                {{ forms.input("customDBPassword", title, module.getOption("customDBPassword"), helpText) }}
+                {{ forms.password("customDBPassword", title, module.getOption("customDBPassword"), helpText) }}
 
                 {% set title %}{% trans "Custom sql query" %}{% endset %}
                 {% set helpText %}{% trans "Please input custom sql query." %}{% endset %}
