@@ -481,6 +481,7 @@ class DataSetView extends ModuleWidget
             // Other properties
             $this->setOption('customField', $sanitizedParams->getString('customfield'));
             $this->setOption('threshold', $sanitizedParams->getString('thresholdjson'));
+            $this->setOption('thresholdCol', $sanitizedParams->getString('thresholdCol'));
             $this->setOption('dateTimeFormat', $sanitizedParams->getString('DateTimeFormat'));
             $this->setOption('name', $sanitizedParams->getString('name'));
             $this->setUseDuration($sanitizedParams->getCheckbox('useDuration'));
@@ -714,7 +715,7 @@ class DataSetView extends ModuleWidget
 
                     } 
 
-                    $("table.DataSetTable td").each(function(){
+                    $("table.DataSetTable td[data-head=\''.$this->getOption("thresholdCol").'\']").each(function(){
                         let cellValue = $(this).children().first().html();
                         if(isNumber.test(cellValue)){
                             console.log("it is number");
@@ -953,18 +954,18 @@ class DataSetView extends ModuleWidget
             $rowCount = 1;
             $rowCountThisPage = 1;
             $totalRows = count($dataSetResults);
-
+            
             if ($rowsPerPage > 0)
-                $totalPages = $totalRows / $rowsPerPage;
+            $totalPages = $totalRows / $rowsPerPage;
             else
-                $totalPages = 1;
-
+            $totalPages = 1;
+            
             $table = '<div id="DataSetTableContainer" totalRows="' . $totalRows . '" totalPages="' . $totalPages . '">';
-
+            
             // Parse each result and
             foreach ($dataSetResults as $row) {
                 if (($rowsPerPage > 0 && $rowCountThisPage >= $rowsPerPage) || $rowCount == 1) {
-
+                    
                     // Reset the row count on this page
                     $rowCountThisPage = 0;
 
@@ -1041,7 +1042,7 @@ class DataSetView extends ModuleWidget
                         $replace =date_format($replace, trim($dataTimeFormatPattern)); 
                     }
 
-                    $table .= '<td class="DataSetColumn DataSetColumn_' . $i . '" id="column_' . ($i + 1) . '"><span class="DataSetCellSpan DataSetCellSpan_' . $rowCount . '_' . $i .'" id="span_' . $rowCount . '_' . ($i + 1) . '">' . $replace . '</span></td>';
+                    $table .= '<td data-head="'. $mapping['heading'] .'" class="DataSetColumn DataSetColumn_' . $i . '" id="column_' . ($i + 1) . '"><span class="DataSetCellSpan DataSetCellSpan_' . $rowCount . '_' . $i .'" id="span_' . $rowCount . '_' . ($i + 1) . '">' . $replace . '</span></td>';
                 }
 
                 // Process queued downloads
