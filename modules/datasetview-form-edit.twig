@@ -253,6 +253,7 @@
                             </div>
                         </div>
 
+                        <div class="editor-messages">
                         {% set optionalHtmlMessage1 %}
                             {% trans "Enter text or HTML in the box below." %}<br>
                         {% endset %}
@@ -265,8 +266,24 @@
                         {% endset %}
                         {{ forms.message(optionalHtmlMessage2, 'optionalHtmlMessage-advanced-editor-show') }}
 
+                        </div>
+                        <div class="form-group row ckeditor_controls inline-editor-hide" data-linked-to="template">
+                            <div class="col-sm-6">
+                                <div class="form-group row">
+                                    <label class="col-sm-4 control-label" for="ckeditor_snippets_select">{% trans "Snippets" %}</label>
+                                    <div class="col-sm-8 ckeditor_select_container">
+                                        <select id="ckeditor_snippets_select"
+                                        class="ckeditor_snippets_select form-control"
+                                        data-linked-to="optionalHtmlMessage">
+                                            {% for column in module.dataSetColumns() %}
+                                            <option value="{{ column.heading}}">{{ column.heading}}</option>
+                                            {% endfor %}                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         {% set helpText %}{% trans "A message to display on screen with opiotnal HTML" %}{% endset %}
-                        {{ forms.textarea("optionalHtmlMessage", "", module.getRawNode("optionalHtmlMessage"), helpText, "", "", 5) }}
+                        {{ forms.textarea("optionalHtmlMessage", "", module.getRawNode("optionalHtmlMessage"), helpText, "", 5) }}
                     </div>
 
                     <div class="tab-pane" id="optionalStylesheetTab">
