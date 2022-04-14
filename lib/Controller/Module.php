@@ -50,6 +50,7 @@ use Xibo\Support\Exception\ConfigurationException;
 use Xibo\Support\Exception\GeneralException;
 use Xibo\Support\Exception\InvalidArgumentException;
 use Xibo\Support\Exception\NotFoundException;
+use Xibo\Custom\CustomDataSetView;
 
 /**
  * Class Module
@@ -1423,6 +1424,39 @@ class Module extends Base
 
         // Directly return the response
         return $response;
+    }
+
+    /**
+     * Get Resource
+     * @param Request $request
+     * @param Response $response
+     * @param $regionId
+     * @param $id
+     * @return \Psr\Http\Message\ResponseInterface|Response
+     * @throws AccessDeniedException
+     * @throws GeneralException
+     * @throws NotFoundException
+     * @throws \Xibo\Support\Exception\ControllerNotImplemented
+     */
+    public function getDataSetLive(Request $request, Response $response, $regionId, $id)
+    {
+        $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($id), $this->regionFactory->getById($regionId));
+
+        if (!$this->getUser()->checkViewable($module->widget)) {
+            throw new AccessDeniedException(__('This Widget is not shared with you'));
+        }
+
+        //if (!($module instanceof CustomDataSetView)) {
+        //    throw new AccessDeniedException(__('This Widget is not CustomDataSetView'));
+        //}
+        
+        // We want a different return depending on whether we are arriving through the API or WEB routes
+        $this->getState()->hydrate([
+            'httpStatus' => 200,
+            'data' => $module->dataSetTableHtml()
+        ]);
+
+        return $this->render($request, $response);
     }
 
     /**

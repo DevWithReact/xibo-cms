@@ -204,6 +204,7 @@ $app->group('', function(\Slim\Routing\RouteCollectorProxy $group) {
 
 })->addMiddleware(new FeatureAuth($app->getContainer(), ['layout.modify']));
 
+$app->get('/playlist/widget/dataset-live/{regionId}/{id}', ['\Xibo\Controller\Module','getDataSetLive'])->setName('module.getDataSetLive');
 //
 // playlists
 //

@@ -741,6 +741,18 @@ class DataSetView extends ModuleWidget
 
                     });
                 }
+                function updateTableData() {
+                    $.ajax({
+                        type: "get",
+                        url: "'.$this->urlFor('module.getDataSetLive', ['regionId' => $this->region->regionId, 'id' => $this->widget->widgetId]).'",
+                    }).done(function(res) {
+                        let data = res.data;
+                        if(res.success) {
+                            $("#content").html(data.html);
+                            setThresholdColor();
+                        }
+                    });
+                }
                 $(document).ready(function() {
                     $("body").xiboLayoutScaler(options);
                     $("#DataSetTableContainer").find("img").xiboImageRender(options);
@@ -749,8 +761,9 @@ class DataSetView extends ModuleWidget
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
 
                     setInterval(() => {
-                        window.location.reload();
+                        updateTableData();
                     }, options.updatesInterval * 1000);
+                    
                     // Do we have a freshnessTimeout?
                     if (options.freshnessTimeout > 0) {
                         // Set up an interval to check whether or not we have exceeded our freshness
@@ -779,7 +792,7 @@ class DataSetView extends ModuleWidget
      * @throws \Xibo\Support\Exception\DuplicateEntityException
      * @throws \Xibo\Support\Exception\GeneralException
      */
-    private function dataSetTableHtml($displayId = 0)
+    public function dataSetTableHtml($displayId = 0)
     {
         // Show a preview of the data set table output.
         $dataSetId = $this->getOption('dataSetId');
