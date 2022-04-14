@@ -77,6 +77,8 @@ class DataSetView extends ModuleWidget
      */
     public function dataSetColumns()
     {
+        if ($this->isCustomQuery())
+            return $this->getCustomQueryColumns();
         return $this->dataSetColumnFactory->getByDataSetId($this->getOption('dataSetId'));
     }
 
