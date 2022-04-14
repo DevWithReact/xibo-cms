@@ -98,7 +98,7 @@ class DataSetView extends ModuleWidget
             $result = $pdo->select($customSql,[]);
             return $result;
         } catch (\PDOException $e) {
-            throw new GeneralException('[getCustomData] Custom Database connection Faied. '.$e->getMessage());
+            throw new GeneralException('[getCustomData] Custom Database connection Faied. ['.$customSql.'], '.$e->getMessage());
         }
     }
 
