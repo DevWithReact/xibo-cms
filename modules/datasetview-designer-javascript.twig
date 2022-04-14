@@ -70,6 +70,7 @@
         if($(this).find('form').data('formStep') === 2) {
             var form = $("#dataSetViewEditForm2");
             let jsonThreshold = {}; 
+            let count = 0; 
 
             // Clean the previous generated hidden dataSetColumns from the form
             form.find('input[name="dataSetColumnId[]"]').remove();
@@ -80,10 +81,17 @@
             });
 
             $('.threshold-item').each(function(){
-
-                let keyThreshold = $(this).find('.threshod-item-value').val();
-                let valueThreshold = $(this).find('.threshod-item-color').val();
-                jsonThreshold[keyThreshold] = valueThreshold; 
+                count++; 
+                let temp = {}; 
+                let thresholdColumn = $(this).find('.threshold-column-select').val();
+                let thresholdComp = $(this).find('.threshold-compare-select').val();
+                let threshodlVal = $(this).find('.threshod-item-value').val();
+                let thresholdColor = $(this).find('.threshod-item-color').val();
+                temp.column = thresholdColumn; 
+                temp.compare = thresholdComp;
+                temp.value = threshodlVal; 
+                temp.color = thresholdColor; 
+                jsonThreshold[count] = temp; 
             })
             $('input[name="thresholdjson"').val(JSON.stringify(jsonThreshold));      
 

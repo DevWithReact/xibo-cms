@@ -488,7 +488,6 @@ class DataSetView extends ModuleWidget
             // Other properties
             $this->setOption('customField', $sanitizedParams->getString('customfield'));
             $this->setOption('threshold', $sanitizedParams->getString('thresholdjson'));
-            $this->setOption('thresholdCol', $sanitizedParams->getString('thresholdCol'));
             $this->setOption('dateTimeFormat', $sanitizedParams->getString('DateTimeFormat'));
             $this->setOption('name', $sanitizedParams->getString('name'));
             $this->setUseDuration($sanitizedParams->getCheckbox('useDuration'));
@@ -696,48 +695,23 @@ class DataSetView extends ModuleWidget
                 'updatesInterval' => $this->getOption('updateInterval', 30000)
             ])
             ->appendJavaScript('
-                function getKeyIndex(array, value){
-                    if(array.length == 0) {
-                        return -1; 
-                    } else if( array.length == 1) {
-                        return 1; 
-                    } else {
-                        for(let i = 0; i < array.length - 1; i++)
-                        {   
-                            if(value > array[i] && value <= array[i + 1]){
-                                return i + 1; 
-                            }
-                        }
-                    }
-                }
                 function setThresholdColor(){
-
                     let initalThreshold ='.$this->getOption('threshold').';
-                    console.log(initalThreshold);
-                    let keyArray=[-Infinity];
-                    let isNumber = new RegExp(/^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$/);
-
-                    if (initalThreshold) {
-                        Object.keys(initalThreshold).forEach(function(key) {
-                            keyArray.push(Number(key)); 
-                        });
-                        keyArray.sort(function(a, b){
-                            return a-b;
-                        })
-
-                    } 
-
-                    $("table.DataSetTable td[data-head=\''.$this->getOption("thresholdCol").'\']").each(function(){
-                        let cellValue = $(this).children().first().html();
-                        if(isNumber.test(cellValue)){
-                            console.log("it is number");
-                            let intervalIndex = getKeyIndex(keyArray, cellValue); 
-                            if (intervalIndex == -1)
-                                return;
-                            $(this).children().first().css("color", initalThreshold[keyArray[intervalIndex]]);
-                        }
-
-                    });
+                    Object.keys(initalThreshold).forEach(function(key){
+                        $("table td[data-head=\'"+ initalThreshold[key].column + "\'] span")
+                            .filter(function(index){
+                                switch(initalThreshold[key].compare)
+                             {
+                             	case "less than": 
+                                    return parseInt(this.innerHTML) < initalThreshold[key].value;
+                                case "greater than": 
+                                    return parseInt(this.innerHTML) > initalThreshold[key].value;
+                                case "equals": 
+                                    return parseInt(this.innerHTML) == initalThreshold[key].value;
+                             }
+                            })
+                            .css("color", initalThreshold[key].color)
+                    })
                 }
                 $(document).ready(function() {
                     $("body").xiboLayoutScaler(options);
@@ -1004,7 +978,7 @@ class DataSetView extends ModuleWidget
                     $table .= '<tbody>';
                 }
 
-                $table .= '<tr class="DataSetRow DataSetRow' . (($rowCount % 2) ? 'Odd' : 'Even') .' id="row_' . $rowCount . '">';
+                $table .= '<tr class="DataSetRow DataSetRow' . (($rowCount % 2) ? 'Odd"' : 'Even"') .' id="row_' . $rowCount . '">';
 
                 // Output each cell for these results
                 $i = 0; 
@@ -1054,7 +1028,7 @@ class DataSetView extends ModuleWidget
                         $replace =date_format($replace, trim($dataTimeFormatPattern)); 
                     }
 
-                    $table .= '<td data-head="'. $mapping['heading'] .'" class="DataSetColumn DataSetColumn_' . $i . '" id="column_' . ($i + 1) . '"><span class="DataSetCellSpan DataSetCellSpan_' . $rowCount . '_' . $i .'" id="span_' . $rowCount . '_' . ($i + 1) . '">' . $replace . '</span></td>';
+                    $table .= '<td data-head="'.$mapping['heading'].'" class="DataSetColumn DataSetColumn_' . $i . '" id="column_' . ($i + 1) . '"><span class="DataSetCellSpan DataSetCellSpan_' . $rowCount . '_' . $i .'" id="span_' . $rowCount . '_' . ($i + 1) . '">' . $replace . '</span></td>';
                 }
 
                 // Process queued downloads

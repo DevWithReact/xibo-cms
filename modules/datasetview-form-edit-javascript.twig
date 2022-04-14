@@ -22,8 +22,55 @@
 #}
 
 <script type="text/javascript">
+
+    function updateValues() {
+        let json={};
+        $('.custom-item').each(function() {
+            var keyElement = $(this).find('.custom-header');
+            var valueElement = $(this).find('.custom-field');
+            json[keyElement.val()] = valueElement.val();
+        })
+
+        fieldCounts = $('.custom-header').first().find('option').length;
+
+        let jsonSring = JSON.stringify(json);
+        $("input[name='customfield']").val(jsonSring);
+        console.log('update values', jsonSring)
+    }
+
+    function getNewRow() {
+        var count = $('.custom-item').length;
+        if (count < fieldCounts  || fieldCounts == 0) {
+            $("#customfield").append(`
+                <div class="col-md-12 row custom-item">
+                    <div class="connectedlist col-sm-5">
+                        <select class="form-control custom-header" >
+                            {% for column in module.dataSetColumns() %}
+                            <option value="{{ column.heading}}">{{ column.heading}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="connectedlist col-sm-5">
+                        <input type="text" class="form-control custom-field" value=""">
+                    </div>
+                    <div class="connectedlist col-sm-2 remove-row">
+                    <input style="width:3vw;" class="btn btn-danger custom-field-button remove-btn" type="button" value="-">
+                    </div>
+                </div>
+            `);
+            updateValues();
+        } else {
+            alert('filled all');
+        }
+    }
+
+    function removeRow(obj){
+        $(obj).parent().parent().remove();
+        updateValues()
+    }
+    
     $(document).ready(function() {
-        var fieldCounts = 0;
+        let fieldCounts = 0;
         let initalCustomField =`{{ module.getOption('customField')}}`;
         if (initalCustomField != '') {
             initalCustomField =JSON.parse($('<textarea />').html(initalCustomField).text());
@@ -51,8 +98,7 @@
             })
         }
 
-        updateValues()
-
+        updateValues();
 
         $('.add-btn').click(function(){
             getNewRow()
@@ -61,52 +107,6 @@
         $('body').on('click', '.remove-btn', function(){
             removeRow($(this))
         })
-
-        function updateValues() {
-            let json={};
-            $('.custom-item').each(function() {
-                var keyElement = $(this).find('.custom-header');
-                var valueElement = $(this).find('.custom-field');
-                json[keyElement.val()] = valueElement.val();
-            })
-
-            fieldCounts = $('.custom-header').first().find('option').length;
-
-            let jsonSring = JSON.stringify(json);
-            $("input[name='customfield']").val(jsonSring);
-            console.log('update values', jsonSring)
-        }
-
-        function getNewRow() {
-            var count = $('.custom-item').length;
-            if (count < fieldCounts  || fieldCounts == 0) {
-                $("#customfield").append(`
-                    <div class="col-md-12 row custom-item">
-                        <div class="connectedlist col-sm-5">
-                            <select class="form-control custom-header" >
-                                {% for column in module.dataSetColumns() %}
-                                <option value="{{ column.heading}}">{{ column.heading}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="connectedlist col-sm-5">
-                            <input type="text" class="form-control custom-field" value=""">
-                        </div>
-                        <div class="connectedlist col-sm-2 remove-row">
-                        <input style="width:3vw;" class="btn btn-danger custom-field-button remove-btn" type="button" value="-">
-                        </div>
-                    </div>
-                `);
-                updateValues();
-            } else {
-                alert('filled all');
-            }
-        }
-
-        function removeRow(obj){
-            $(obj).parent().parent().remove();
-            updateValues()
-        }
 
         $("#customfield").on("keyup", "input.custom-field", function(){
             let fieldArray = $("input.custom-field");

@@ -217,22 +217,6 @@
                             <label class="col-sm-8">Press Add button to add threshold color for dataset view.</label>
                         </div> 
 
-                        <div class="col-sm-12">
-                            <div class="form-group row">
-                                <label class="col-sm-4 control-label" for="ckeditor_snippets_select">{% trans "Snippets" %}</label>
-                                <div class="col-sm-8 ckeditor_select_container">
-                                    <select name="thresholdCol" class="ckeditor_snippets_select form-control">
-                                        {% for column in module.dataSetColumns() %}
-                                            {% if  module.getOption('thresholdCol') == column.heading %}
-                                            <option value="{{ column.heading}}" selected >{{ column.heading}}</option>
-                                            {% else %}
-                                            <option value="{{ column.heading}}">{{ column.heading }}</option>
-                                            {% endif %}
-                                        {% endfor %}                                        
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
                         <div class="content-threshold"></div>
                     </div>
 
