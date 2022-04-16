@@ -32,6 +32,22 @@
 {% block extra %}{{ module.getExtra()|json_encode|raw }}{% endblock %}
 
 {% block formHtml %}
+    <style>
+        .threshold-item > div:not(:last-child){
+            padding-right:0 !important; 
+            padding-left:0 !important;
+         }
+
+         .threshold-item select{
+            padding-right:0; 
+            padding-left:0;
+         }
+
+         .threshold-item > div:not(:last-child) input{
+            padding-right:0; 
+            padding-left:0;
+         }
+    </style>
     <div class="row">
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item"><a class="nav-link active" href="#general" role="tab" data-toggle="tab"><span>{% trans "General" %}</span></a></li>

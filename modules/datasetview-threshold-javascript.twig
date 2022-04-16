@@ -81,24 +81,24 @@
                 Object.keys(initalThreshold).forEach(function(key) {
                    $('.content-threshold').append(`
                         <div class="threshold-item row">
-                            <div class="col-sm-3 ckeditor_select_container">
-                                <select class="threshold-column-select form-control">
+                            <div class="col-sm-2 ckeditor_select_container">
+                                <select style="padding-right:0; padding-left:0" class="threshold-column-select form-control">
                                     {% for column in module.dataSetColumns() %}
                                         <option value="{{ column.heading}}" ` + (initalThreshold[key].column == '{{ column.heading }}' ?  'selected':'') +  `>{{ column.heading}}</option>
                                     {% endfor %}                                        
                                 </select>
                             </div>
-                            <div class="col-sm-3">
-                                <select class="threshold-compare-select form-control">
+                            <div class="col-sm-4">
+                                <select style="padding-right:0; padding-left:0" class="threshold-compare-select form-control">
                                     <option value="less than" ` + ( initalThreshold[key].compare == "less than" ? "selected" : "") + `>less than</option>
                                     <option value="greater than" ` + ( initalThreshold[key].compare == "greater than" ? "selected" : "") + `>greater than</option>
                                     <option value="equals" ` + ( initalThreshold[key].compare == "equals" ? "selected" : "") + `>equals</option>
                                 </select>
                             </div>
-                            <div class="col-sm-3">
+                            <div class="col-sm-2">
                                 <input type='number' value='`+ initalThreshold[key].value +`' class='form-control threshod-item-value'>
                             </div>
-                            <div class="col-sm-3 colorpicker-input">
+                            <div class="col-sm-4 colorpicker-input">
                                 <div class="input-group">
                                     <div class="input-group-prepend">
                                         <i class="input-group-text input-group-addon" ></i>

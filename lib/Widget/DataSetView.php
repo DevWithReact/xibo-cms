@@ -699,7 +699,8 @@ class DataSetView extends ModuleWidget
             ->appendJavaScript('
                 function setThresholdColor(){
                     let initalThreshold ='.$this->getOption('threshold').';
-                    Object.keys(initalThreshold).forEach(function(key){
+                    Object.keys(initalThreshold).reverse().forEach(function(key){
+                        console.log(initalThreshold[key].value);
                         $("table td[data-head=\'"+ initalThreshold[key].column + "\'] span")
                             .filter(function(index){
                                 switch(initalThreshold[key].compare)
