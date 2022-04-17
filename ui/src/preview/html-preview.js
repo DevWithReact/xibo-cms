@@ -1133,6 +1133,18 @@ function previewActionTrigger(path, data, done) {
         if($actionDOMObj.length) {
             $actionDOMObj.click();
         }
+    } else if(path == '/remove') {
+        // Set duration action
+        var mediaToChange = findMediaById(data.id);
+        mediaToChange.region.checkReadyState();
+        if(mediaToChange != undefined && mediaToChange.region.ready) {
+            mediaToChange.region.totalMediaObjects = mediaToChange.region.totalMediaObjects - 1;
+            mediaToChange.region.mediaObjects = mediaToChange.region.mediaObjects.filter((item) => item.id != mediaToChange.id);
+            // Update timeout
+            clearTimeout(mediaToChange.timeoutId);
+            mediaToChange.region.currentMedia = mediaToChange.region.currentMedia - 1;
+            mediaToChange.region.nextMedia();
+        }
     }
 
     // Call callback if exists

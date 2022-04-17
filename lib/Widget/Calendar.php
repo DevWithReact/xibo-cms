@@ -686,6 +686,14 @@ class Calendar extends ModuleWidget
                     var currentEventTrigger = ' . ($this->getOption('currentEventTrigger', '') == '' ? 'false' : ('"' . $this->getOption('currentEventTrigger'). '"')) . ';
                     var skipNoData = ' . $this->getOption('skipNoData') . ';
 
+                    // Close widget and skip it.
+                    if (items.length == 0 && skipNoData == 1) {
+                        if (typeof parent.previewActionTrigger == "function"){
+                            parent.previewActionTrigger("/remove", {id: xiboICTargetId});
+                            return;
+                        }
+                    }
+
                     // Prepare the items array, sorting it and removing any items that have expired.
                     $.each(items, function(index, element) {
                         // Parse the item and add it to the array if it has not finished yet
@@ -712,12 +720,6 @@ class Calendar extends ModuleWidget
                     
                     var runOnVisible = function() { $("#content").xiboTextRender(options, parsedItems); };
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
-
-                    // Close widget and skip it.
-                    if (items.length == 0 && skipNoData == 1) {
-                        xiboIC.setWidgetDuration(0);
-                        return;
-                    }
 
                     // Run calendar render
                     $("body").xiboCalendarRender(options, parsedItems);
