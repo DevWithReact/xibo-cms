@@ -491,6 +491,12 @@ class DataSetView extends ModuleWidget
             $this->setOption('customField', $sanitizedParams->getString('customfield'));
             $this->setOption('threshold', $sanitizedParams->getString('thresholdjson'));
             $this->setOption('dateTimeFormat', $sanitizedParams->getString('DateTimeFormat'));
+            $this->setOption('enableCustomTrigger', $sanitizedParams->getCheckbox('enableCustomTrigger'));
+            $this->setOption('triggerDataSetId', $sanitizedParams->getString('triggerDataSetId'));
+            $this->setOption('triggerColumn', $sanitizedParams->getString('triggerColumn'));
+            $this->setOption('triggerCondition', $sanitizedParams->getString('triggerCondition'));
+            $this->setOption('triggerValue', $sanitizedParams->getString('triggerValue'));
+
             $this->setOption('name', $sanitizedParams->getString('name'));
             $this->setUseDuration($sanitizedParams->getCheckbox('useDuration'));
             $this->setDuration($sanitizedParams->getInt('duration', ['default' => $this->getDuration()]));
@@ -694,9 +700,16 @@ class DataSetView extends ModuleWidget
                 'generatedOn' => Carbon::now()->format('c'),
                 'freshnessTimeout' => $this->getOption('freshnessTimeout', 0),
                 'noDataMessage' => $this->noDataMessageOrDefault('')['html'],
-                'updatesInterval' => $this->getOption('updateInterval', 30000)
+                'updatesInterval' => $this->getOption('updateInterval', 30000),
+                'enableCustomTrigger' => $this->getOption('enableCustomTrigger'),
+                'triggerDataSetId' => $this->getOption('triggerDataSetId'),
+                'triggerColumn' => $this->getOption('triggerColumn'),
+                'triggerCondition' => $this->getOption('triggerCondition'),
+                'triggerValue' => $this->getOption('triggerValue'),
+                'widgetId' => $this->getWidgetId()
             ])
             ->appendJavaScript('
+                var dsTriggerTimer = 0;
                 function setThresholdColor(){
                     let initalThreshold ='.$this->getOption('threshold').';
                     Object.keys(initalThreshold).reverse().forEach(function(key){
@@ -716,6 +729,22 @@ class DataSetView extends ModuleWidget
                             .css("color", initalThreshold[key].color)
                     })
                 }
+                function checkCustomTrigger() {
+                    $.ajax({
+                        type: "get",
+                        url: `'.$this->urlFor('module.widget.dataset.checkCustomTrigger').'?triggerDataSetId=${options.triggerDataSetId}&triggerColumn=${options.triggerColumn}&triggerCondition=${options.triggerCondition}&triggerValue=${options.triggerValue}`,
+                    }).done(function(res) {
+                        let data = res.data;
+                        if(res.success) {
+                            if (data == "false") {
+                                if (typeof parent.previewActionTrigger == "function"){
+                                    parent.previewActionTrigger("/remove", {id: options.widgetId});
+                                    dsTriggerTimer && clearInterval(dsTriggerTimer);
+                                }
+                            }
+                        }
+                    });
+                }
                 $(document).ready(function() {
                     $("body").xiboLayoutScaler(options);
                     $("#DataSetTableContainer").find("img").xiboImageRender(options);
@@ -726,6 +755,12 @@ class DataSetView extends ModuleWidget
                     setInterval(() => {
                         window.location.reload();
                     }, options.updatesInterval * 1000);
+                    
+                    if (options.enableCustomTrigger) {
+                        dsTriggerTimer = setInterval(() => {
+                            checkCustomTrigger();
+                        }, 2000);
+                    }
                     // Do we have a freshnessTimeout?
                     if (options.freshnessTimeout > 0) {
                         // Set up an interval to check whether or not we have exceeded our freshness

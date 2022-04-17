@@ -1405,6 +1405,59 @@ class Module extends Base
         $this->getState()->recordsTotal = $this->dataSetFactory->countLast();
 
         return $this->render($request, $response);
+    }    
+    
+    /**
+    * @param Request $request
+    * @param Response $response
+    * @return \Psr\Http\Message\ResponseInterface|Response
+    * @throws GeneralException
+    * @throws NotFoundException
+    * @throws \Xibo\Support\Exception\ControllerNotImplemented
+    */
+    public function getDataSetColumns(Request $request, Response $response)
+    {
+        $parsedRequestParams = $this->getSanitizer($request->getParams());
+        $dataSetId = $parsedRequestParams->getString('dataSetId');
+        $datSetColumns = $this->dataSetFactory->getDataSetColumnFactory()->getByDataSetId($dataSetId);
+        $this->getState()->setData($datSetColumns);
+        $this->getState()->recordsTotal = count($datSetColumns);
+
+        return $this->render($request, $response);
+    }
+
+    /**
+    * @param Request $request
+    * @param Response $response
+    * @return \Psr\Http\Message\ResponseInterface|Response
+    * @throws GeneralException
+    * @throws NotFoundException
+    * @throws \Xibo\Support\Exception\ControllerNotImplemented
+    */
+    public function checkCustomTrigger(Request $request, Response $response) {
+        $parsedRequestParams = $this->getSanitizer($request->getParams());
+        $triggerDataSetId = $parsedRequestParams->getString('triggerDataSetId');
+        $triggerColumn = $parsedRequestParams->getString('triggerColumn');
+        $triggerCondition = $parsedRequestParams->getString('triggerCondition');
+        $triggerValue = $parsedRequestParams->getString('triggerValue');
+        $dataSet = $this->dataSetFactory->getById($triggerDataSetId);
+        switch($triggerCondition) {
+            case 'equal':
+                $op = '=';
+                break;
+            case 'less':
+                $op = '<';
+                break;
+            case 'greater':
+                $op = '>';
+                break;
+        }
+        $data = $dataSet->getData(['filter' => $triggerColumn.$op.$triggerValue]);
+        if ($dataSet->countLast() > 0)
+            $this->getState()->setData('true');
+        else
+            $this->getState()->setData('false');
+        return $this->render($request, $response);
     }
 
     /**

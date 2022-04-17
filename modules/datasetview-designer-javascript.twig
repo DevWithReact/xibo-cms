@@ -61,6 +61,7 @@
             });
 
             dataSetFormSetup(this);
+            triggerDataSetSetup();
         }
     }
 
@@ -148,5 +149,28 @@
                 }
             });
         }
+    }
+
+    function triggerDataSetSetup() {
+        loadTriggerColumnOptions($("#triggerDataSetId").val());
+        $("#triggerDataSetId").on("change", (e) => {
+            loadTriggerColumnOptions($("#triggerDataSetId").val());
+        })
+    }
+
+    function loadTriggerColumnOptions(dataSetId) {
+        const columnBaseUrl = "{{ url_for('module.widget.dataset.columns') }}";
+        let dropdown = $("#triggerColumn");
+        dropdown.html("");
+        $.ajax({
+            method: "GET",
+            url: columnBaseUrl + "?dataSetId=" + dataSetId,
+            success: function(res) {
+                if (res.success) {
+                    $.each(res.data, function(index, element) {
+                        dropdown.append($('<option value="' + element.heading + '" selected>' + element.heading + '</option>'))                    });
+                }
+            }
+        });
     }
 </script>
