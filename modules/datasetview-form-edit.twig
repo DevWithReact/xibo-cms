@@ -140,7 +140,7 @@
 
                         {% set title %}{% trans "Trigger when" %}{% endset %}
                         {% set helpText %}{% trans "The widget will be hidden when the column value meets the criteria with this value." %}{% endset %}
-                        {{ forms.number("triggerValue", title, module.getOption('triggerValue'), helpText, "triggerValue", "required") }}
+                        {{ forms.number("triggerValue", title, module.getOption('triggerValue'), helpText, "triggerValue") }}
 
                     </div>
 
