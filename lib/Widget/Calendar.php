@@ -501,15 +501,7 @@ class Calendar extends ModuleWidget
         $this->setOption('skipNoData', $sanitizedParams->getCheckbox('skipNoData'));
         $this->setOption('customDataSetId', $sanitizedParams->getString('customDataSetId'));
         $this->setOption('useDataSet', $sanitizedParams->getCheckbox('useDataSet'));
-        
 
-        $this->setOption('useiCal', $sanitizedParams->getCheckbox('useiCal'));
-        if ($sanitizedParams->getCheckbox('useiCal') == 1) {
-            if ($sanitizedParams->getString('iCalData'))
-                $this->setOption('iCalData', $sanitizedParams->getString('iCalData'));
-        }
-        else
-            $this->setOption('iCalData', '');
         // Template/Configure options
         if ($this->getOption('calendarType') == 1) {
             // Schedule templates
@@ -777,15 +769,19 @@ class Calendar extends ModuleWidget
     {
         // Create a key to use as a caching key for this item.
         // the rendered feed will be cached, so it is important the key covers all options.
-        $localData = $this->getOption('iCalData');
+        $customDataSetId = $this->getOption('customDataSetId');
+        $useDataSet = $this->getOption('useDataSet');
         $libraryFolder = $this->getConfig()->getSetting('LIBRARY_LOCATION');
         $feedUrl = urldecode($this->getOption('uri'));
 
-        if (empty($localData) && empty($feedUrl)) {
+        if (empty($customDataSetId) && empty($feedUrl)) {
             throw new ConfigurationException(__('Please provide a calendar feed URL'));
         }
 
-        $cacheKey = $feedUrl ? $feedUrl : $localData;
+        if ($useDataSet == 1)
+            return "";
+
+        $cacheKey = $feedUrl ? $feedUrl : $customDataSetId;
         /** @var \Stash\Item $cache */
         $cache = $this->getPool()->getItem($this->makeCacheKey(md5($cacheKey)));
         $cache->setInvalidationMethod(Invalidation::SLEEP, 5000, 15);
@@ -1004,7 +1000,9 @@ class Calendar extends ModuleWidget
             throw new InvalidArgumentException(__('Please enter a duration'), 'duration');
         }
         // Validate the URL
-        if (empty($this->getOption('iCalData')) && !v::url()->notEmpty()->validate(urldecode($this->getOption('uri')))) {
+        if ($this->getOption('useDataSet') == 1 && empty($this->getOption('customDataSetId')))
+            throw new InvalidArgumentException(__('Please select a Dataset you want to display'), 'DataSet');
+        if ($this->getOption('useDataSet') == 0 && !v::url()->notEmpty()->validate(urldecode($this->getOption('uri')))) {
             throw new InvalidArgumentException(__('Please enter a feed URI containing the events you want to display'), 'uri');
         }
 
