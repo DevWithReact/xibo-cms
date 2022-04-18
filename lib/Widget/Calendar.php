@@ -675,7 +675,9 @@ class Calendar extends ModuleWidget
             'aditionalEventsTextColor' => $this->getOption('aditionalEventsTextColor'),
             'noEventsBgColor' => $this->getOption('noEventsBgColor'),
             'noEventsTextColor' => $this->getOption('noEventsTextColor'),
-            'skipNoData' => $this->getOption('skipNoData')
+            'skipNoData' => $this->getOption('skipNoData'),
+            'updateInterval' => $this->getOption('updateInterval', 360),
+            'useDataSet' => $this->getOption('useDataSet')
         ];
 
         // Include some vendor items and javascript
@@ -749,6 +751,11 @@ class Calendar extends ModuleWidget
                     } else if(noEventTrigger) {
                         // If there is no event now, send the No Event trigger
                         xiboIC.trigger(noEventTrigger);
+                    }
+                    if (options.useDataSet) {
+                        setInterval(() => {
+                            window.location.reload();
+                        }, options.updateInterval * 1000);
                     }
                 });
             ')
@@ -964,7 +971,7 @@ class Calendar extends ModuleWidget
                 $endDt = Carbon::instance(new \DateTime($event->dtend));
 
                 if ($excludeAllDay && ($endDt->diff($startDt)->days >= 1)) {
-                    //continue;
+                    continue;
                 }
 
                 // Create basic event element
