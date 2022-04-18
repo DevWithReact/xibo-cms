@@ -555,7 +555,7 @@ class Calendar extends ModuleWidget
         $this->setOption('multiDayEventTextColor', $sanitizedParams->getString('multiDayEventTextColor'));
         $this->setOption('aditionalEventsBgColor', $sanitizedParams->getString('aditionalEventsBgColor'));
         $this->setOption('aditionalEventsTextColor', $sanitizedParams->getString('aditionalEventsTextColor'));
-    
+
         $this->setOption('excludeAllDay', $sanitizedParams->getCheckbox('excludeAllDay'));
         $this->setOption('updateInterval', $sanitizedParams->getInt('updateInterval', ['default' => 120]));
 
@@ -717,10 +717,10 @@ class Calendar extends ModuleWidget
                         // Parse the item and add it to the array if it has not finished yet
                         var startDate = moment(element.startDate);
                         var endDate = moment(element.endDate);
-                        
+
                         // Check if there is an event ongoing
                         ongoingEvent = (startDate.isBefore(now) && endDate.isAfter(now));
-                        
+
                         if (endDate.isAfter(now)) {
                             if (moment(element.startDate).isBefore(now)) {
                                 element.currentEvent = true;
@@ -732,10 +732,10 @@ class Calendar extends ModuleWidget
                         // Return all elements
                         parsedItems.push(element);
                     });
-                
+
                     $("body").find("img").xiboImageRender(options);
                     $("body").xiboLayoutScaler(options);
-                    
+
                     var runOnVisible = function() { $("#content").xiboTextRender(options, parsedItems); };
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
 
