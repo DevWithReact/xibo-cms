@@ -75,6 +75,7 @@
         $(self).find('#overrideColorTemplate, #templateTheme, #calendarType').on('change', updateColors);
         updateColors();
         registeriCalendarLoad();
+        initDataSetSelect();
     }
 
     // Runs before form submit
@@ -82,6 +83,11 @@
 
         // Update text callback fields
         formHelpers.updateCKEditor();
+    }
+
+    function initDataSetSelect() {
+        let selector = $("#customDataSetId");
+        makePagedSelect(selector, $("body"));
     }
 
     function registeriCalendarLoad() {

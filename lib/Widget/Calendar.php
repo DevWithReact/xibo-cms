@@ -499,6 +499,8 @@ class Calendar extends ModuleWidget
         $this->setOption('eventLabelNow', $sanitizedParams->getString('eventLabelNow'));
         $this->setOption('calendarType', $sanitizedParams->getInt('calendarType', ['default' => 1]));
         $this->setOption('skipNoData', $sanitizedParams->getCheckbox('skipNoData'));
+        $this->setOption('customDataSetId', $sanitizedParams->getString('customDataSetId'));
+        $this->setOption('useDataSet', $sanitizedParams->getCheckbox('useDataSet'));
         
 
         $this->setOption('useiCal', $sanitizedParams->getCheckbox('useiCal'));
@@ -571,6 +573,22 @@ class Calendar extends ModuleWidget
 
         return $response;
     }
+
+    /**
+     * Get DataSet object, used by TWIG template.
+     *
+     * @return array
+     * @throws NotFoundException
+     */
+    public function getDataSet()
+    {
+        if ($this->getOption('customDataSetId') != 0) {
+            return [$this->dataSetFactory->getById($this->getOption('customDataSetId'))];
+        } else {
+            return null;
+        }
+    }
+
 
     /**
      * @inheritdoc
@@ -822,6 +840,11 @@ class Calendar extends ModuleWidget
      */
     private function parseFeed($feed, $calendarType)
     {
+        $useDataSet = $this->getOption('useDataSet');
+        if ($useDataSet == 1) {
+            return $this->loadFromDataSet();
+        }
+
         $items = [];
 
         // Create an ICal helper and pass it the contents of the file.
@@ -895,6 +918,53 @@ class Calendar extends ModuleWidget
 
                 if ($excludeAllDay && ($endDt->diff($startDt)->days >= 1)) {
                     continue;
+                }
+
+                // Create basic event element
+                $itemToAdd = [
+                    'startDate' => $startDt->format('c'),
+                    'endDate' => $endDt->format('c'),
+                    'item' => $event
+                ];
+
+                // Get event properties and add them to the resulting object
+                $itemToAdd['summary'] = $event->summary;
+                $itemToAdd['description'] = $event->description;
+                $itemToAdd['location'] = $event->location;
+
+                // Add item to array
+                $items[] = $itemToAdd;
+            } catch (\Exception $exception) {
+                $this->getLog()->error('Unable to parse event. ' . var_export($event, true));
+            }
+        }
+
+        return $items;
+    }
+
+    public function loadFromDataSet() {
+        $customDataSetId = $this->getOption('customDataSetId');
+        $dataSet = $this->dataSetFactory->getById($customDataSetId);
+        $dataSetResults = $dataSet->getData();
+
+        $items = [];
+
+        // Decide on the Range we're interested in
+        // $iCal->eventsFromInterval only works for future events
+        $excludeAllDay = $this->getOption('excludeAllDay', 0) == 1;
+
+        $startOfDay = Carbon::now()->startOfDay();
+        $endOfDay = $startOfDay->copy()->addDay()->startOfDay();
+
+        // Go through each event returned
+        foreach ($dataSetResults as $event) {
+            try {
+                $event = (object)$event;
+                $startDt = Carbon::instance(new \DateTime($event->dtstart));
+                $endDt = Carbon::instance(new \DateTime($event->dtend));
+
+                if ($excludeAllDay && ($endDt->diff($startDt)->days >= 1)) {
+                    //continue;
                 }
 
                 // Create basic event element
