@@ -123,7 +123,7 @@
                             { name: "data-id-property", value: "dataSetId" },
                             { name: "data-text-property", value: "dataSet" }
                         ] %}
-                        {{ forms.dropdown("triggerDataSetId", "single", title, "", module.getDataSet(), "dataSetId", "dataSet", helpText, "dataset-fields pagedSelect", "", "", "", attributes) }}
+                        {{ forms.dropdown("triggerDataSetId", "single", title, "", module.getTriggerDataSet(), "dataSetId", "dataSet", helpText, "dataset-fields pagedSelect", "", "", "", attributes) }}
 
                         {% set title %}{% trans "Trigger Column" %}{% endset %}
                         {% set options = [
