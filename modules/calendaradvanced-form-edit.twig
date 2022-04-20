@@ -94,6 +94,10 @@
                         {% set title %}{% trans "Import Dataset" %}{% endset %}
                         {{ forms.checkbox("useDataSet", title, module.getOption("useDataSet")) }}
 
+                        {% set title %}{% trans "Skip calendar in no data" %}{% endset %}
+                        {% set helpText %}{% trans "Use the checkbox to skip calendar to the next widget in track" %}{% endset %}
+                        {{ forms.checkbox("skipNoData", title, module.getOption("skipNoData", 0), helpText) }}
+
                         <section class="schedule-control-group">
                             {% set title %}{% trans "No events message" %}{% endset %}
                             {% set defaultMessage %}{% trans "No upcoming events" %}{% endset %}
@@ -104,10 +108,6 @@
                             {% set title %}{% trans "Interval" %}{% endset %}
                             {% set helpText %}{% trans "Using natural language enter a string representing the period for which events should be returned, for example 2 days or 1 week." %}{% endset %}
                             {{ forms.input("customInterval", title, module.getOption("customInterval"), helpText, "interval")}}
-
-                            {% set title %}{% trans "Skip calendar in no data" %}{% endset %}
-                            {% set helpText %}{% trans "Use the checkbox to skip calendar to the next widget in track" %}{% endset %}
-                            {{ forms.checkbox("skipNoData", title, module.getOption("skipNoData", 0), helpText) }}
 
                             {% set title %}{% trans "Select a Date range to return events instead?" %}{% endset %}
                             {% set helpText %}{% trans "Use the checkbox to return events within defined start and end dates" %}{% endset %}
