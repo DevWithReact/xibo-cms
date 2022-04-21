@@ -80,6 +80,10 @@ defined('XIBO') or die('Sorry, you are not allowed to directly access this page.
 $app->get('/about', ['\Xibo\Controller\Login', 'About'])->setName('about');
 $app->get('/clock', ['\Xibo\Controller\Clock', 'clock'])->setName('clock');
 $app->post('/tfa', ['\Xibo\Controller\Login' , 'twoFactorAuthValidate'])->setName('tfa.auth.validate');
+$app->get('/playlist/widget/dataset-columns', ['\Xibo\Controller\Module','getDataSetColumns'])->setName('module.widget.dataset.columns');
+$app->get('/playlist/widget/check-trigger', ['\Xibo\Controller\Module','checkCustomTrigger'])->setName('module.widget.dataset.checkCustomTrigger');
+$app->get('/playlist/widget/calendar-items/{regionId}/{id}', ['\Xibo\Controller\Module','getCalendarItems'])->setName('module.getCalendarItems');
+$app->get('/playlist/widget/dataset-live/{regionId}/{id}', ['\Xibo\Controller\Module','getDataSetLive'])->setName('module.getDataSetLive');
 
 /**
  * Schedule
