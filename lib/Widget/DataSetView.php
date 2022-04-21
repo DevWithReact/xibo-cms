@@ -721,7 +721,7 @@ class DataSetView extends ModuleWidget
                 'widgetId' => $this->getWidgetId()
             ])
             ->appendJavaScript('
-                var dsTriggerTimer = 0;
+                let dsTriggerTimer = 0;
                 function setThresholdColor(){
                     let initalThreshold ='.$this->getOption('threshold').';
                     Object.keys(initalThreshold).reverse().forEach(function(key){
@@ -749,11 +749,25 @@ class DataSetView extends ModuleWidget
                         let data = res.data;
                         if(res.success) {
                             if (data == "false") {
+                                dsTriggerTimer && clearInterval(dsTriggerTimer);
                                 if (typeof parent.previewActionTrigger == "function"){
                                     parent.previewActionTrigger("/remove", {id: options.widgetId});
-                                    dsTriggerTimer && clearInterval(dsTriggerTimer);
+                                } else {
+                                    xiboIC.expireNow();
                                 }
                             }
+                        }
+                    });
+                }
+                function updateTableData() {
+                    $.ajax({
+                        type: "get",
+                        url: "'.$this->urlFor('module.getDataSetLive', ['regionId' => $this->region->regionId, 'id' => $this->widget->widgetId]).'",
+                    }).done(function(res) {
+                        let data = res.data;
+                        if(res.success) {
+                            $("#content").html(data.html);
+                            setThresholdColor();
                         }
                     });
                 }
@@ -765,10 +779,10 @@ class DataSetView extends ModuleWidget
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
 
                     setInterval(() => {
-                        window.location.reload();
+                        updateTableData();
                     }, options.updatesInterval * 1000);
                     
-                    if (options.enableCustomTrigger) {
+                    if (options.enableCustomTrigger === "1") {
                         dsTriggerTimer = setInterval(() => {
                             checkCustomTrigger();
                         }, 2000);
@@ -801,7 +815,7 @@ class DataSetView extends ModuleWidget
      * @throws \Xibo\Support\Exception\DuplicateEntityException
      * @throws \Xibo\Support\Exception\GeneralException
      */
-    private function dataSetTableHtml($displayId = 0)
+    public function dataSetTableHtml($displayId = 0)
     {
         // Show a preview of the data set table output.
         $dataSetId = $this->getOption('dataSetId');
