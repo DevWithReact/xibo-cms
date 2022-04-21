@@ -770,7 +770,7 @@ class Calendar extends ModuleWidget
                 }
 
                 $(document).ready(function() {
-                    renderCalendar(items);
+                    updateItems();
                 });
             ')
             ->appendJavaScript($this->parseLibraryReferences($this->isPreview(), $this->getRawNode('javaScript', '')))
