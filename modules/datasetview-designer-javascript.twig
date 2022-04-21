@@ -161,6 +161,7 @@
     function loadTriggerColumnOptions(dataSetId) {
         const columnBaseUrl = "{{ url_for('module.widget.dataset.columns') }}";
         let dropdown = $("#triggerColumn");
+        let selectedVal = dropdown.data("value");
         dropdown.html("");
         $.ajax({
             method: "GET",
@@ -168,7 +169,7 @@
             success: function(res) {
                 if (res.success) {
                     $.each(res.data, function(index, element) {
-                        dropdown.append($('<option value="' + element.heading + '" selected>' + element.heading + '</option>'))                    });
+                        dropdown.append($('<option value="' + element.heading + '" ' + (selectedVal == element.heading ? 'selected' : '' ) + '>' + element.heading + '</option>'))                    });
                 }
             }
         });

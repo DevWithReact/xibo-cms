@@ -128,7 +128,10 @@
                         {% set title %}{% trans "Trigger Column" %}{% endset %}
                         {% set options = [
                         ] %}
-                        {{ forms.dropdown("triggerColumn", "single", title, module.getOption("triggerColumn"), options, "id", "value", helpText) }}
+                        {% set attributes = [
+                            { name: "data-value", value: module.getOption('triggerColumn') }
+                        ] %}
+                        {{ forms.dropdown("triggerColumn", "single", title, module.getOption("triggerColumn"), options, "id", "value", helpText, "", "", "", "", attributes) }}
 
                         {% set title %}{% trans "Trigger Condition" %}{% endset %}
                         {% set options = [
