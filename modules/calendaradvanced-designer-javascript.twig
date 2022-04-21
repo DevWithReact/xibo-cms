@@ -74,6 +74,7 @@
 
         $(self).find('#overrideColorTemplate, #templateTheme, #calendarType').on('change', updateColors);
         updateColors();
+        initDataSetSelect();
     }
 
     // Runs before form submit
@@ -81,6 +82,11 @@
 
         // Update text callback fields
         formHelpers.updateCKEditor();
+    }
+
+    function initDataSetSelect() {
+        let selector = $("#customDataSetId");
+        makePagedSelect(selector, $("body"));
     }
 
 </script>

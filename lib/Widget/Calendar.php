@@ -33,6 +33,7 @@ use Stash\Invalidation;
 use Xibo\Helper\Translate;
 use Xibo\Support\Exception\ConfigurationException;
 use Xibo\Support\Exception\InvalidArgumentException;
+use Xibo\Helper\AttachmentUploadHandler;
 
 /**
  * Class Calendar
@@ -497,6 +498,9 @@ class Calendar extends ModuleWidget
         $this->setOption('name', $sanitizedParams->getString('name'));
         $this->setOption('eventLabelNow', $sanitizedParams->getString('eventLabelNow'));
         $this->setOption('calendarType', $sanitizedParams->getInt('calendarType', ['default' => 1]));
+        $this->setOption('skipNoData', $sanitizedParams->getCheckbox('skipNoData'));
+        $this->setOption('customDataSetId', $sanitizedParams->getString('customDataSetId'));
+        $this->setOption('useDataSet', $sanitizedParams->getCheckbox('useDataSet'));
 
         // Template/Configure options
         if ($this->getOption('calendarType') == 1) {
@@ -543,7 +547,7 @@ class Calendar extends ModuleWidget
         $this->setOption('multiDayEventTextColor', $sanitizedParams->getString('multiDayEventTextColor'));
         $this->setOption('aditionalEventsBgColor', $sanitizedParams->getString('aditionalEventsBgColor'));
         $this->setOption('aditionalEventsTextColor', $sanitizedParams->getString('aditionalEventsTextColor'));
-    
+
         $this->setOption('excludeAllDay', $sanitizedParams->getCheckbox('excludeAllDay'));
         $this->setOption('updateInterval', $sanitizedParams->getInt('updateInterval', ['default' => 120]));
 
@@ -555,11 +559,28 @@ class Calendar extends ModuleWidget
         $this->setOption('noEventTrigger', $sanitizedParams->getString('noEventTrigger'));
         $this->setOption('currentEventTrigger', $sanitizedParams->getString('currentEventTrigger'));
 
+        $this->setRawNode('javaScript', $request->getParam('javaScript', ''));
         $this->isValid();
         $this->saveWidget();
 
         return $response;
     }
+
+    /**
+     * Get DataSet object, used by TWIG template.
+     *
+     * @return array
+     * @throws NotFoundException
+     */
+    public function getDataSet()
+    {
+        if ($this->getOption('customDataSetId') != 0) {
+            return [$this->dataSetFactory->getById($this->getOption('customDataSetId'))];
+        } else {
+            return null;
+        }
+    }
+
 
     /**
      * @inheritdoc
@@ -586,7 +607,6 @@ class Calendar extends ModuleWidget
 
         // Get the feed URL contents from cache or source
         $items = $this->parseFeed($this->getFeed(), $calendarType);
-
         // Information from the Module
         $duration = $this->getCalculatedDurationForGetResource();
         $takeItemsFrom = $this->getOption('takeItemsFrom', 'start');
@@ -646,7 +666,10 @@ class Calendar extends ModuleWidget
             'aditionalEventsBgColor' => $this->getOption('aditionalEventsBgColor'),
             'aditionalEventsTextColor' => $this->getOption('aditionalEventsTextColor'),
             'noEventsBgColor' => $this->getOption('noEventsBgColor'),
-            'noEventsTextColor' => $this->getOption('noEventsTextColor')
+            'noEventsTextColor' => $this->getOption('noEventsTextColor'),
+            'skipNoData' => $this->getOption('skipNoData'),
+            'updateInterval' => $this->getOption('updateInterval', 360),
+            'useDataSet' => $this->getOption('useDataSet')
         ];
 
         // Include some vendor items and javascript
@@ -673,16 +696,25 @@ class Calendar extends ModuleWidget
                     var ongoingEvent = false;
                     var noEventTrigger = ' . ($this->getOption('noEventTrigger', '') == '' ? 'false' : ('"' . $this->getOption('noEventTrigger') . '"')) . ';
                     var currentEventTrigger = ' . ($this->getOption('currentEventTrigger', '') == '' ? 'false' : ('"' . $this->getOption('currentEventTrigger'). '"')) . ';
+                    var skipNoData = ' . $this->getOption('skipNoData') . ';
+
+                    // Close widget and skip it.
+                    if (items.length == 0 && skipNoData == 1) {
+                        if (typeof parent.previewActionTrigger == "function"){
+                            parent.previewActionTrigger("/remove", {id: xiboICTargetId});
+                            return;
+                        }
+                    }
 
                     // Prepare the items array, sorting it and removing any items that have expired.
                     $.each(items, function(index, element) {
                         // Parse the item and add it to the array if it has not finished yet
                         var startDate = moment(element.startDate);
                         var endDate = moment(element.endDate);
-                        
+
                         // Check if there is an event ongoing
                         ongoingEvent = (startDate.isBefore(now) && endDate.isAfter(now));
-                        
+
                         if (endDate.isAfter(now)) {
                             if (moment(element.startDate).isBefore(now)) {
                                 element.currentEvent = true;
@@ -694,16 +726,17 @@ class Calendar extends ModuleWidget
                         // Return all elements
                         parsedItems.push(element);
                     });
-                
+
                     $("body").find("img").xiboImageRender(options);
                     $("body").xiboLayoutScaler(options);
-                    
+
                     var runOnVisible = function() { $("#content").xiboTextRender(options, parsedItems); };
                     (xiboIC.checkVisible()) ? runOnVisible() : xiboIC.addToQueue(runOnVisible);
 
                     // Run calendar render
                     $("body").xiboCalendarRender(options, parsedItems);
                     
+                    console.log("noEventTrigger", items);
                     if(ongoingEvent && currentEventTrigger) {
                         // If there is an event now, send the Current Event trigger ( if exists )
                         xiboIC.trigger(currentEventTrigger);
@@ -711,8 +744,14 @@ class Calendar extends ModuleWidget
                         // If there is no event now, send the No Event trigger
                         xiboIC.trigger(noEventTrigger);
                     }
+                    if (options.useDataSet) {
+                        setInterval(() => {
+                            window.location.reload();
+                        }, options.updateInterval * 1000);
+                    }
                 });
             ')
+            ->appendJavaScript($this->parseLibraryReferences($this->isPreview(), $this->getRawNode('javaScript', '')))
             ->appendItems($items);
 
         // Append calendar structure
@@ -730,17 +769,24 @@ class Calendar extends ModuleWidget
     {
         // Create a key to use as a caching key for this item.
         // the rendered feed will be cached, so it is important the key covers all options.
+        $customDataSetId = $this->getOption('customDataSetId');
+        $useDataSet = $this->getOption('useDataSet');
+        $libraryFolder = $this->getConfig()->getSetting('LIBRARY_LOCATION');
         $feedUrl = urldecode($this->getOption('uri'));
 
-        if (empty($feedUrl)) {
+        if (empty($customDataSetId) && empty($feedUrl)) {
             throw new ConfigurationException(__('Please provide a calendar feed URL'));
         }
 
+        if ($useDataSet == 1)
+            return "";
+
+        $cacheKey = $feedUrl ? $feedUrl : $customDataSetId;
         /** @var \Stash\Item $cache */
-        $cache = $this->getPool()->getItem($this->makeCacheKey(md5($feedUrl)));
+        $cache = $this->getPool()->getItem($this->makeCacheKey(md5($cacheKey)));
         $cache->setInvalidationMethod(Invalidation::SLEEP, 5000, 15);
 
-        $this->getLog()->debug('Calendar ' . $feedUrl . '. Cache key: ' . $cache->getKey());
+        $this->getLog()->debug('Calendar ' . $cacheKey . '. Cache key: ' . $cache->getKey());
 
         // Get the document out of the cache
         $document = $cache->get();
@@ -754,13 +800,18 @@ class Calendar extends ModuleWidget
             $cache->lock(120);
 
             try {
-                // Create a Guzzle Client to get the Feed XML
-                $client = new Client();
-                $response = $client->get($feedUrl, $this->getConfig()->getGuzzleProxy([
-                    'timeout' => 20 // wait no more than 20 seconds: https://github.com/xibosignage/xibo/issues/1401
-                ]));
+                if (!empty($feedUrl)) {
+                    // Create a Guzzle Client to get the Feed XML
+                    $client = new Client();
+                    $response = $client->get($feedUrl, $this->getConfig()->getGuzzleProxy([
+                        'timeout' => 20 // wait no more than 20 seconds: https://github.com/xibosignage/xibo/issues/1401
+                    ]));
 
-                $document = $response->getBody()->getContents();
+                    $document = $response->getBody()->getContents();
+                } else {
+                    $fileName = $libraryFolder . 'temp/' . $localData;
+                    $document = file_get_contents($fileName);
+                }
 
             } catch (RequestException $requestException) {
                 // Log and return empty?
@@ -772,7 +823,7 @@ class Calendar extends ModuleWidget
 
             // Add this to the cache.
             $cache->set($document);
-            $cache->expiresAfter($this->getOption('updateInterval', 360) * 60);
+            $cache->expiresAfter($this->getOption('updateInterval', 360));
 
             // Save
             $this->getPool()->saveDeferred($cache);
@@ -792,6 +843,11 @@ class Calendar extends ModuleWidget
      */
     private function parseFeed($feed, $calendarType)
     {
+        $useDataSet = $this->getOption('useDataSet');
+        if ($useDataSet == 1) {
+            return $this->loadFromDataSet();
+        }
+
         $items = [];
 
         // Create an ICal helper and pass it the contents of the file.
@@ -889,6 +945,53 @@ class Calendar extends ModuleWidget
         return $items;
     }
 
+    public function loadFromDataSet() {
+        $customDataSetId = $this->getOption('customDataSetId');
+        $dataSet = $this->dataSetFactory->getById($customDataSetId);
+        $dataSetResults = $dataSet->getData();
+
+        $items = [];
+
+        // Decide on the Range we're interested in
+        // $iCal->eventsFromInterval only works for future events
+        $excludeAllDay = $this->getOption('excludeAllDay', 0) == 1;
+
+        $startOfDay = Carbon::now()->startOfDay();
+        $endOfDay = $startOfDay->copy()->addDay()->startOfDay();
+
+        // Go through each event returned
+        foreach ($dataSetResults as $event) {
+            try {
+                $event = (object)$event;
+                $startDt = Carbon::instance(new \DateTime($event->dtstart));
+                $endDt = Carbon::instance(new \DateTime($event->dtend));
+
+                if ($excludeAllDay && ($endDt->diff($startDt)->days >= 1)) {
+                    continue;
+                }
+
+                // Create basic event element
+                $itemToAdd = [
+                    'startDate' => $startDt->format('c'),
+                    'endDate' => $endDt->format('c'),
+                    'item' => $event
+                ];
+
+                // Get event properties and add them to the resulting object
+                $itemToAdd['summary'] = $event->summary;
+                $itemToAdd['description'] = $event->description;
+                $itemToAdd['location'] = $event->location;
+
+                // Add item to array
+                $items[] = $itemToAdd;
+            } catch (\Exception $exception) {
+                $this->getLog()->error('Unable to parse event. ' . var_export($event, true));
+            }
+        }
+
+        return $items;
+    }
+
     /** @inheritdoc */
     public function isValid()
     {
@@ -896,9 +999,10 @@ class Calendar extends ModuleWidget
         if ($this->getUseDuration() == 1 && $this->getDuration() == 0) {
             throw new InvalidArgumentException(__('Please enter a duration'), 'duration');
         }
-
         // Validate the URL
-        if (!v::url()->notEmpty()->validate(urldecode($this->getOption('uri')))) {
+        if ($this->getOption('useDataSet') == 1 && empty($this->getOption('customDataSetId')))
+            throw new InvalidArgumentException(__('Please select a Dataset you want to display'), 'DataSet');
+        if ($this->getOption('useDataSet') == 0 && !v::url()->notEmpty()->validate(urldecode($this->getOption('uri')))) {
             throw new InvalidArgumentException(__('Please enter a feed URI containing the events you want to display'), 'uri');
         }
 
@@ -925,7 +1029,7 @@ class Calendar extends ModuleWidget
     /** @inheritdoc */
     public function getCacheDuration()
     {
-        return $this->getOption('updateInterval', 120) * 60;
+        return $this->getOption('updateInterval', 120);
     }
 
     /** @inheritdoc */

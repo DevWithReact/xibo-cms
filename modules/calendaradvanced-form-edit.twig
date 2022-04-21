@@ -38,6 +38,7 @@
             <li class="nav-item"><a class="nav-link" href="#configurationTab" role="tab" data-toggle="tab"><span>{% trans "Configuration" %}</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#appearanceTab" role="tab" data-toggle="tab"><span>{% trans "Appearance" %}</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#cachingTab" role="tab" data-toggle="tab"><span>{% trans "Caching" %}</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="#optionalJavascriptTab" role="tab" data-toggle="tab"><span>{% trans "optionalJavascript" %}</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#triggerTab" role="tab" data-toggle="tab"><span>{% trans "Trigger" %}</span></a></li>
         </ul>
 
@@ -76,6 +77,26 @@
                         {% set title %}{% trans "Feed URL" %}{% endset %}
                         {% set helpText %}{% trans "The Link for the iCal Feed" %}{% endset %}
                         {{ forms.input("uri", title, module.getOption("uri")|url_decode, helpText)}}
+                       
+                        {% set title %}{% trans "Import from DataSet" %}{% endset %}
+                        {% set helpText %}{% trans "Please select the DataSet to use as a source of data for this view." %}{% endset %}
+                        {% set attributes = [
+                            { name: "data-width", value: "200px" },
+                            { name: "data-allow-clear", value: "true" },
+                            { name: "data-placeholder--id", value: null },
+                            { name: "data-placeholder--value", value: "" },
+                            { name: "data-search-url", value: url_for("module.widget.dataset.search") },
+                            { name: "data-search-term", value: "dataSet" },
+                            { name: "data-id-property", value: "dataSetId" },
+                            { name: "data-text-property", value: "dataSet" }
+                        ] %}
+                        {{ forms.dropdown("customDataSetId", "single", title, "", module.getDataSet(), "dataSetId", "dataSet", helpText, "dataset-fields pagedSelect", "", "", "", attributes) }}                        
+                        {% set title %}{% trans "Import Dataset" %}{% endset %}
+                        {{ forms.checkbox("useDataSet", title, module.getOption("useDataSet")) }}
+
+                        {% set title %}{% trans "Skip calendar in no data" %}{% endset %}
+                        {% set helpText %}{% trans "Use the checkbox to skip calendar to the next widget in track" %}{% endset %}
+                        {{ forms.checkbox("skipNoData", title, module.getOption("skipNoData", 0), helpText) }}
 
                         <section class="schedule-control-group">
                             {% set title %}{% trans "No events message" %}{% endset %}
@@ -302,9 +323,17 @@
                     </div>
 
                     <div class="tab-pane" id="cachingTab">
-                        {% set title %}{% trans "Update Interval (mins)" %}{% endset %}
-                        {% set helpText %}{% trans "Please enter the update interval in minutes. This should be kept as high as possible. For example, if the data will only change once per hour this could be set to 60." %}{% endset %}
-                        {{ forms.number("updateInterval", title, module.getOption("updateInterval", 5), helpText, "", "required") }}
+                        {% set title %}{% trans "Update Interval (secs)" %}{% endset %}
+                        {% set helpText %}{% trans "Please enter the update interval in seconds. This should be kept as high as possible. For example, if the data will only change once per hour this could be set to 3600." %}{% endset %}
+                        {{ forms.number("updateInterval", title, module.getOption("updateInterval", 300), helpText, "", "required") }}
+                    </div>
+
+                    <div class="tab-pane" id="optionalJavascriptTab">
+                        <div class="form-content-title">
+                            <h4>{% trans "Optional JavaScript" %}</h4>
+                        </div>
+
+                        {{ forms.textarea("javaScript", "", module.getRawNode("javaScript"), "", "", "", 10) }}
                     </div>
 
                     <div class="tab-pane" id="triggerTab">
