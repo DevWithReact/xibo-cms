@@ -669,7 +669,8 @@ class Calendar extends ModuleWidget
             'noEventsTextColor' => $this->getOption('noEventsTextColor'),
             'skipNoData' => $this->getOption('skipNoData'),
             'updateInterval' => $this->getOption('updateInterval', 360),
-            'useDataSet' => $this->getOption('useDataSet')
+            'useDataSet' => $this->getOption('useDataSet'),
+            'mainTemplate' => $mainTemplate
         ];
 
         // Include some vendor items and javascript
@@ -690,7 +691,21 @@ class Calendar extends ModuleWidget
             ->appendCss(file_get_contents($this->getConfig()->uri('css/client.css', true)))
             ->appendOptions($calendarOptions)
             ->appendJavaScript('
-                $(document).ready(function() {
+                let timer = 0;
+                function updateItems() {
+                    $.ajax({
+                        type: "get",
+                        url: "'.$this->urlFor('module.getCalendarItems', ['regionId' => $this->region->regionId, 'id' => $this->widget->widgetId]).'",
+                    }).done(function(res) {
+                        let data = res.data;
+                        if(res.success) {
+                            $("#content").html(options.mainTemplate);
+                            renderCalendar(data);
+                        }
+                    });
+                }
+
+                function renderCalendar(argItems) {
                     var parsedItems = [];
                     var now = moment();
                     var ongoingEvent = false;
@@ -699,15 +714,18 @@ class Calendar extends ModuleWidget
                     var skipNoData = ' . $this->getOption('skipNoData') . ';
 
                     // Close widget and skip it.
-                    if (items.length == 0 && skipNoData == 1) {
+                    if (argItems.length == 0 && skipNoData == 1) {
+                        clearInterval(timer);
                         if (typeof parent.previewActionTrigger == "function"){
                             parent.previewActionTrigger("/remove", {id: xiboICTargetId});
                             return;
+                        } else {
+                            xiboIC.expireNow();
                         }
                     }
 
                     // Prepare the items array, sorting it and removing any items that have expired.
-                    $.each(items, function(index, element) {
+                    $.each(argItems, function(index, element) {
                         // Parse the item and add it to the array if it has not finished yet
                         var startDate = moment(element.startDate);
                         var endDate = moment(element.endDate);
@@ -736,7 +754,6 @@ class Calendar extends ModuleWidget
                     // Run calendar render
                     $("body").xiboCalendarRender(options, parsedItems);
                     
-                    console.log("noEventTrigger", items);
                     if(ongoingEvent && currentEventTrigger) {
                         // If there is an event now, send the Current Event trigger ( if exists )
                         xiboIC.trigger(currentEventTrigger);
@@ -745,10 +762,15 @@ class Calendar extends ModuleWidget
                         xiboIC.trigger(noEventTrigger);
                     }
                     if (options.useDataSet) {
-                        setInterval(() => {
-                            window.location.reload();
+                        clearInterval(timer);
+                        timer = setInterval(() => {
+                            updateItems();
                         }, options.updateInterval * 1000);
                     }
+                }
+
+                $(document).ready(function() {
+                    renderCalendar(items);
                 });
             ')
             ->appendJavaScript($this->parseLibraryReferences($this->isPreview(), $this->getRawNode('javaScript', '')))
@@ -758,6 +780,17 @@ class Calendar extends ModuleWidget
         $this->appendBody($mainTemplate);
 
         return $this->finaliseGetResource();
+    }
+
+    public function getItems() {
+        $calendarType = intval($this->getOption('calendarType', 1));
+        $calendarTypeName = self::CALENDAR_TYPES[$calendarType];
+        $templateFromJSON = $this->getTemplateById($calendarTypeName);
+
+        // Get the feed URL contents from cache or source
+        $items = $this->parseFeed($this->getFeed(), $calendarType);
+
+        return $items;
     }
 
     /**

@@ -206,6 +206,8 @@ $app->group('', function(\Slim\Routing\RouteCollectorProxy $group) {
 
 })->addMiddleware(new FeatureAuth($app->getContainer(), ['layout.modify']));
 
+$app->get('/playlist/widget/calendar-items/{regionId}/{id}', ['\Xibo\Controller\Module','getCalendarItems'])->setName('module.getCalendarItems');
+
 //
 // playlists
 //
