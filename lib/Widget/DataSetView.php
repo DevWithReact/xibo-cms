@@ -133,9 +133,11 @@ class DataSetView extends ModuleWidget
                 str_replace(';', '', $customSql);
                 $customSql = $customSql . ' limit 1;';
             }
-            $pdo->select('create view '.$randomName.' as '.$customSql,[]);
+            /*$pdo->select('create view '.$randomName.' as '.$customSql,[]);
             $rows= $pdo->select('select COLUMN_NAME from information_schema.COLUMNS where TABLE_NAME=\''.$randomName.'\';',[]);
-            $pdo->select('drop view '.$randomName, []);
+            $pdo->select('drop view '.$randomName, []);*/
+            preg_match("/\s+from\s+`?([a-z\d_]+)`?/i", $customSql, $match);
+            $rows= $pdo->select("select COLUMN_NAME from information_schema.COLUMNS where TABLE_NAME='".$match[1]."';",[]);
             foreach($rows as $row) {
                 if ($row['COLUMN_NAME'] == 'id')
                     continue;
