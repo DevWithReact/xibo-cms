@@ -1455,10 +1455,17 @@ class Module extends Base
                 break;
         }
         $data = $dataSet->getData(['filter' => $triggerColumn.$op.$triggerValue]);
+        $result = false;
         if ($dataSet->countLast() > 0)
-            $this->getState()->setData('true');
-        else
-            $this->getState()->setData('false');
+            $result = true;
+        
+        $this->getState()->hydrate([
+            'httpStatus' => 200,
+            'data' => [
+                'data' => $result,
+                'status'=> true
+            ]
+        ]);
         return $this->render($request, $response);
     }
 
@@ -1485,7 +1492,10 @@ class Module extends Base
         // We want a different return depending on whether we are arriving through the API or WEB routes
         $this->getState()->hydrate([
             'httpStatus' => 200,
-            'data' => $module->getItems()
+            'data' => [
+                'data' => $module->getItems(),
+                'status'=> true
+            ]
         ]);
 
         return $this->render($request, $response);
