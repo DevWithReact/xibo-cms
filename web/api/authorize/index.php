@@ -56,7 +56,8 @@ $container->set('logger', function () {
 
     return $logger;
 });
-
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 // Create a Slim application
 $app = \DI\Bridge\Slim\Bridge::create($container);
 $app->setBasePath($container->get('basePath'));
