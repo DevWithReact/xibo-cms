@@ -1463,7 +1463,7 @@ class Module extends Base
             'httpStatus' => 200,
             'data' => [
                 'data' => $result,
-                'status'=> true
+                'success'=> true
             ]
         ]);
         return $this->render($request, $response);
@@ -1494,7 +1494,7 @@ class Module extends Base
             'httpStatus' => 200,
             'data' => [
                 'data' => $module->getItems(),
-                'status'=> true
+                'success'=> true
             ]
         ]);
 
@@ -1545,7 +1545,10 @@ class Module extends Base
         // We want a different return depending on whether we are arriving through the API or WEB routes
         $this->getState()->hydrate([
             'httpStatus' => 200,
-            'data' => $module->dataSetTableHtml()
+            'data' => [
+                'data' => $module->dataSetTableHtml(),
+                'success' => true
+            ]
         ]);
 
         return $this->render($request, $response);
