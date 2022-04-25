@@ -83,7 +83,7 @@ $app->post('/tfa', ['\Xibo\Controller\Login' , 'twoFactorAuthValidate'])->setNam
 $app->get('/playlist/widget/dataset-columns', ['\Xibo\Controller\Module','getDataSetColumns'])->setName('module.widget.dataset.columns');
 $app->get('/playlist/widget/check-trigger', ['\Xibo\Controller\Module','checkCustomTrigger'])->setName('module.widget.dataset.checkCustomTrigger');
 $app->get('/playlist/widget/calendar-items/{regionId}/{id}', ['\Xibo\Controller\Module','getCalendarItems'])->setName('module.getCalendarItems');
-$app->get('/playlist/widget/dataset-live/{regionId}/{id}', ['\Xibo\Controller\Module','getDataSetLive'])->setName('module.getDataSetLive');
+$app->get('/playlist/widget/dataset-live/{regionId}/{id}/{displayId}', ['\Xibo\Controller\Module','getDataSetLive'])->setName('module.getDataSetLive');
 
 /**
  * Schedule

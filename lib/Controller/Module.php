@@ -1530,7 +1530,7 @@ class Module extends Base
      * @throws NotFoundException
      * @throws \Xibo\Support\Exception\ControllerNotImplemented
      */
-    public function getDataSetLive(Request $request, Response $response, $regionId, $id)
+    public function getDataSetLive(Request $request, Response $response, $regionId, $id, $displayId)
     {
         $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($id), $this->regionFactory->getById($regionId));
 
@@ -1546,7 +1546,7 @@ class Module extends Base
         $this->getState()->hydrate([
             'httpStatus' => 200,
             'data' => [
-                'data' => $module->dataSetTableHtml(),
+                'data' => $module->dataSetTableHtml($displayId),
                 'success' => true
             ]
         ]);
